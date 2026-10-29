@@ -36,6 +36,9 @@ const frontendSecurityHeaders = [
   "strict-transport-security"
 ];
 console.log("Frontend response security headers: " + JSON.stringify(Object.fromEntries(frontendSecurityHeaders.map(name => [name, frontend.headers.get(name)]))));
+for (const name of ["content-security-policy", "x-frame-options", "referrer-policy"]) {
+  assert.ok(frontend.headers.has(name), "Frontend response missing required security header: " + name);
+}
 const html = await frontend.text();
 assert.ok(html.toLowerCase().includes("<html"), "Frontend should serve HTML");
 assert.match(html, /Research to Code/i, "Expected app title/brand missing");
