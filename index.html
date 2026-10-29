@@ -686,30 +686,6 @@ function runLocalLabAnalysis(feature){
     report.tests={present:ev.tests.trim().length>0,characters:ev.tests.length,executedAgainstCurrentCode:!!(ev.latestRun&&ev.latestRun.ran&&ev.latestRun.codeMatchesCurrent&&ev.latestRun.testsMatchCurrent)};
     report.latestRun=ev.latestRun;
     report.verdict="No scientific claim is marked verified by this local-only report. Run tests and use configured AI analysis for a deeper evidence audit.";
-  }else if(feature==="fix"){
-    report.title="Fix → Retest — local failure diagnosis";
-    report.code={present:ev.afterCode.trim().length>0,characters:ev.afterCode.length};
-    report.tests={present:ev.tests.trim().length>0,characters:ev.tests.length};
-    report.latestRun=ev.latestRun;
-    report.diagnosis=[];
-    if(!ev.afterCode.trim())report.diagnosis.push("Add the implementation to After before diagnosing a failure.");
-    if(!ev.tests.trim())report.diagnosis.push("Add pytest tests before attempting a retest.");
-    if(!ev.latestRun){report.diagnosis.push("No executed test run is available yet. Run the current code and tests first.");}
-    else if(!ev.latestRun.ran){report.diagnosis.push("The latest record did not execute. Check the worker/download error, then retry.");}
-    else if(ev.latestRun.status==="passed"){report.diagnosis.push("The latest recorded run passed. If code or tests changed since then, run them again; passing tests only cover asserted behavior.");}
-    else {
-      var logText=[ev.latestRun.status,ev.latestRun.output,ev.latestRun.error,ev.latestRun.message].join("\n");
-      if(/ModuleNotFoundError|No module named/i.test(logText))report.diagnosis.push("Likely missing dependency or import path. Confirm the package is installed and the module name is correct.");
-      if(/AssertionError|assert .* failed|\bfailed\b/i.test(logText))report.diagnosis.push("A test assertion failed. Compare expected and actual values, then add a regression test for the intended behavior.");
-      if(/SyntaxError|IndentationError/i.test(logText))report.diagnosis.push("Python syntax or indentation error. Check the reported line and surrounding block.");
-      if(/NameError|UnboundLocalError/i.test(logText))report.diagnosis.push("A name is missing or used before assignment. Check spelling, scope, and initialization.");
-      if(/ImportError/i.test(logText))report.diagnosis.push("An import failed. Verify the module exists and its exported name is correct.");
-      if(/timed out|timed out|infinite loop/i.test(logText))report.diagnosis.push("The run timed out. Check loops and expensive operations; keep the browser runner limited to trusted, small workloads.");
-      if(!report.diagnosis.length)report.diagnosis.push("No known error pattern matched. Read the full output/error log and reproduce the failure with a small test.");
-    }
-    report.currentRunEvidenceMatches=!!(ev.latestRun&&ev.latestRun.ran&&ev.latestRun.codeMatchesCurrent&&ev.latestRun.testsMatchCurrent);
-    report.nextSteps=["Review the diagnosis against the full test output; these are heuristics, not a code fix.","Edit After and run the same tests again.","Compare the new run with this recorded result."];
-    report.note="Local diagnosis uses recorded output patterns only. It does not edit code or claim to have fixed the problem; AI-powered suggestions require configured AI and explicit consent."
   }else{
     var imports=function(code){return (code.match(/^\s*(?:from\s+([\w.]+)\s+import|import\s+([\w., ]+))/gm)||[]).map(function(line){var m=/^\s*from\s+([\w.]+)\s+import|^\s*import\s+([\w., ]+)/.exec(line);return (m[1]||m[2]||"").split(",").map(function(v){return v.trim().split(/\s+as\s+/)[0].split(".")[0]}).filter(Boolean)}).reduce(function(a,b){return a.concat(b)},[]).filter(function(v,i,a){return a.indexOf(v)===i}).sort()};
     var a=imports(ev.beforeCode),b=imports(ev.afterCode),all=Array.from(new Set(a.concat(b))).sort();
