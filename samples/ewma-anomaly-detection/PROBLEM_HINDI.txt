@@ -1,0 +1,23 @@
+Research to Code — नमूना समस्या
+
+समस्या: Python में time-series डेटा के लिए EWMA anomaly detector को ठीक करना।
+
+एक मॉनिटरिंग सिस्टम सेंसर की readings (जैसे तापमान या सर्वर response time) की सूची देता है। हमें ऐसा detect_ewma(data, alpha=0.1, k=3.0, warmup=5) फ़ंक्शन चाहिए जो हर reading के लिए True/False लौटाए। True का अर्थ है कि उस बिंदु को पिछले EWMA mean और variance के मुकाबले असामान्य माना गया।
+
+आवश्यक व्यवहार:
+1. आउटपुट की लंबाई input के बराबर हो।
+2. खाली सूची पर [] लौटे।
+3. 0 < alpha <= 1 न होने पर ValueError आए।
+4. k <= 0 या warmup < 0 होने पर ValueError आए।
+5. स्थिर डेटा में कोई anomaly न हो।
+6. सामान्य readings के बाद आने वाला बहुत बड़ा spike पहचाना जाए।
+7. शुरुआती warmup बिंदुओं को anomaly न बताया जाए।
+
+ऐप में इसे जाँचने का तरीका:
+- Code टैब में buggy_code.py को Before में डालें।
+- solution.py को After में डालें।
+- test_solution.py को Proof Mode के Tests में डालें।
+- Proof Mode में “Run After” चुनकर Run tests दबाएँ।
+- फिर “Run Before” चुनें। सही समाधान को सभी tests पास करने चाहिए और buggy code को ठीक 5 tests में fail होना चाहिए।
+
+नोट: यह एक ऑफ़लाइन उदाहरण है। AI Lab से अपने-आप समाधान बनवाने के लिए वेबसाइट के मालिक को पहले AI provider कॉन्फ़िगर करना होगा; इस पैकेज में AI provider/API key सेट नहीं है.
