@@ -3,7 +3,7 @@
 **Audit date:** 29 October 2026  
 **Decision:** **NOT READY FOR PUBLIC CUSTOMER LAUNCH**  
 **Live frontend:** https://research-to-code.onrender.com  
-**Source revision re-verified:** `de27ef14ed11283364bfddab29eab554f133e11a` (fixes the CSP URL-host test and verifies the configured API-origin allowlist).
+**Source revision re-verified:** `5df6e8c39c4cd6123dc251eafac89f0997686728` (adds Render API adapter hardening, CORS health-method coverage, and a live Node adapter smoke test).
 
 ## Changes made in this audit
 
@@ -77,3 +77,19 @@ Do not publicly launch or accept customer money until the deployment checklist i
 - Render reported the API process started successfully on port 10000 and the environment-variable deployment reached `live`. Direct external HTTP verification from this execution environment was unavailable, so the public `/health` URL still needs an owner/browser smoke check.
 - **Still not ready for customer launch:** Supabase schema/Auth not confirmed in the live project; API service-role and anon keys not set; frontend-to-API wiring intentionally pending; AI provider not selected/configured; Razorpay test credentials/webhook not configured or end-to-end tested; security response headers and Android Chrome not independently verified; Privacy/Terms still contain operator/contact placeholders. Do not accept customer payments.
 
+
+
+## Follow-up audit — 29 October 2026, 14:35 UTC
+
+### Additional code changes in this pass
+- The Render Node adapter now applies `nosniff`, frame-denial, a JSON-only CSP, no-referrer and HSTS headers to normal Worker responses as well as adapter-generated errors. These headers are implemented in code; the deployed HTTPS response still needs an external header check.
+- Corrected the API CORS allowed-methods list to include GET for the liveness endpoint.
+- Expanded CI to run an actual local HTTP smoke test against the Node adapter: `/health`, security headers, missing-Supabase configuration guard, and oversized-request rejection.
+- The current latest commit is `5df6e8c39c4cd6123dc251eafac89f0997686728`. The website-bundle workflow passed on this commit; the full API/logic workflow was still running at the moment of this report refresh. Check GitHub Actions for final status.
+- Render auto-deploys for the latest commit were queued/in progress at the time of this report refresh. Confirm both services report the same revision as live before relying on the new runtime behavior.
+
+### Still blocked by owner-side configuration or real devices/accounts
+- Do not set frontend `API_BASE` until the API service has `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` configured securely. Do not paste keys into chat or GitHub.
+- The database schema/auth providers, real AI provider, Razorpay test webhook, and legal/operator placeholders remain unconfigured/unverified.
+- The Render service's health-check path is not configured in the service settings; configure it to `/health` in Render if the plan/settings support it.
+- External live endpoint requests from this environment returned an access error, so no claim is made that the deployed health endpoint, response headers, browser behavior, or Android behavior has been externally verified.
