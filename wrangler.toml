@@ -1,6 +1,7 @@
-name = "research-to-code"
+name = "research-to-code-api"
 main = "worker/worker.js"
-compatibility_date = "2026-10-28"
+compatibility_date = "2026-10-29"
+workers_dev = true
 
-[vars]
-APP_NAME = "Research-to-Code"
+# No credentials belong in this file. Set environment variables/secrets in
+# Cloudflare dashboard or with `wrangler secret put` after logging in.

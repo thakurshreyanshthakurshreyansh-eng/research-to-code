@@ -26,4 +26,4 @@ Updated: 29 October 2026
   samples/ewma-anomaly-detection/PROBLEM_HINDI.txt
   buggy_code.py, solution.py, test_solution.py
 
-Cloudflare Pages के लिए `_headers` शामिल है। Deploy करने से पहले `DEPLOYMENT_CHECKLIST_HI.md` को पूरा करें; वर्तमान निर्णय PUBLIC LAUNCH BLOCKED है। GitHub Pages `_headers` लागू नहीं करता। किसी भी secret/API key को index.html, GitHub या ChatGPT में न डालें। पहले disposable test account और test-mode services से जाँच करें.
+Cloudflare Pages के लिए `_headers` शामिल है। Deploy करने से पहले `DEPLOYMENT_CHECKLIST_HI.md` को पूरा करें; वर्तमान निर्णय PUBLIC LAUNCH BLOCKED है। GitHub Pages `_headers` लागू नहीं करता। किसी भी secret/API key को index.html, GitHub या ChatGPT में न डालें। पहले disposable test account और test-mode services से जाँच करें।

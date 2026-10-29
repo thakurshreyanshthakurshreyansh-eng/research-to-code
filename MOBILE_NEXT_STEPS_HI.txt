@@ -1,8 +1,12 @@
-मोबाइल से आगे के चरण
+Research to Code — मोबाइल से अगला कदम
 
-1. GitHub में repository की फाइलें जाँचें।
-2. index.html और बाकी सभी मूल फाइलें ZIP से अपलोड करें।
-3. Worker के लिए आवश्यक environment variables और secrets सेट करें।
-4. Supabase schema चलाएँ और authentication/configuration जाँचें।
-5. मोबाइल और desktop दोनों पर login, challenge flow, pricing और privacy pages टेस्ट करें।
-6. सभी जाँच पूरी होने के बाद ही Render पर deploy करें।
+1. Website ZIP: Research-to-Code-WEBSITE-ALPHA-UPLOAD.zip — इसमें index.html, _headers, privacy.html और terms.html हैं। यह अभी AI provider या login को अपने-आप चालू नहीं करता।
+2. Full project ZIP: Research-to-Code-FEATURE-ALPHA.zip — इसमें वेबसाइट, Worker, SQL, tests, setup और status report हैं।
+3. पहले Supabase project बनाकर SETUP.md के A और B चरण करें। Secret keys चैट में न भेजें।
+4. Cloudflare Worker deploy करें और उसके variables/secrets सेट करें। AI_ENABLED अभी false ही रखें जब तक आप provider की कीमत/गोपनीयता देखकर मंजूरी न दें।
+5. वेबसाइट के CFG में सिर्फ public values भरें। SUPABASE_SERVICE_ROLE_KEY, AI_API_KEY और Razorpay secrets कभी index.html/GitHub में न डालें।
+6. AI चालू करने के लिए बाद में एक compatible provider चुनना होगा; यह मुफ्त होना जरूरी नहीं है। उस समय backend में AI_API_URL, AI_MODEL, AI_API_KEY और AI_ENABLED=true सेट होंगे; index.html में AI_ENABLED=true होगा।
+7. SQL schema एक बार चलाएँ; अगर पुराना schema पहले चल चुका है तो केवल नई ai_usage_events/consume_ai_quota migration लागू करें। SQL Editor में दोबारा पूरा schema बिना समीक्षा के न चलाएँ।
+8. Razorpay के लिए केवल Test Mode. Live payments अभी बंद रखें; Premium AI features और legal policies अभी launch-ready नहीं हैं।
+9. privacy.html और terms.html में [ADD ...] placeholders भरें और कानूनी समीक्षा के बाद ही सार्वजनिक करें।
+10. कोई password, service_role key, AI key, Razorpay secret या webhook secret किसी चैट में साझा न करें।

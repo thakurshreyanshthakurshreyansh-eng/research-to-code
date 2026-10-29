@@ -75,6 +75,7 @@ The UI lists the major Indian digital-payment categories for transparency, but *
 9. Test the supplied `samples/ewma-anomaly-detection/` exercise: run the tests against `solution.py` (expected 10/10 pass), then against `buggy_code.py` (expected 5 failures).
 10. On a disposable Supabase test account, verify account export returns only that user's data; verify account deletion with explicit confirmation and confirm the auth user plus linked app records are gone. Do not test deletion against a real user's account.
 
+
 ## Deployment gate (read before publishing)
 
 Use `DEPLOYMENT_CHECKLIST_HI.md` as the required release runbook. Pro and Ultra are intentionally unavailable; do not create active price rows or accept live payments until their actual features and lifecycle are implemented and end-to-end tested. The `_headers` CSP supports the default `*.supabase.co` and `*.workers.dev` hostnames; if you use custom domains, add those exact origins and re-test the deployed browser console/network panel. HSTS should only be served over HTTPS.

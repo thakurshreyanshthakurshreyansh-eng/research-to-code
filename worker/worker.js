@@ -15,8 +15,13 @@ const json = (o, s, h) => new Response(JSON.stringify(o), { status: s || 200, he
 const db = (env, path, init = {}) => fetch(env.SUPABASE_URL + "/rest/v1/" + path, { ...init, signal: init.signal || AbortSignal.timeout(12000), headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, authorization: "Bearer " + env.SUPABASE_SERVICE_ROLE_KEY, "content-type": "application/json", ...init.headers } });
 const rows = async res => { if (!res.ok) throw new Error("db " + res.status); return res.json(); };
 const q = s => encodeURIComponent(String(s));
+// Stage 2 deliberately permits TEST mode only. This blocks accidental live charges,
+// even if someone mistakenly turns PAYMENTS_ENABLED on with live credentials.
 function testModeReady(env) {
-  return env.PAYMENT_MODE === "test" && /^rzp_test_/.test(String(env.RAZORPAY_KEY_ID || "")) && Boolean(env.RAZORPAY_KEY_SECRET) && Boolean(env.RAZORPAY_WEBHOOK_SECRET);
+  return env.PAYMENT_MODE === "test" &&
+    /^rzp_test_/.test(String(env.RAZORPAY_KEY_ID || "")) &&
+    Boolean(env.RAZORPAY_KEY_SECRET) &&
+    Boolean(env.RAZORPAY_WEBHOOK_SECRET);
 }
 async function getUser(req, env) {
   const t = (req.headers.get("authorization") || "").replace(/^Bearer /, "");
@@ -25,6 +30,7 @@ async function getUser(req, env) {
   return r.ok ? r.json() : null;
 }
 const grant = async (env, oid, pid) => rows(await db(env, "rpc/grant_order", { method: "POST", body: JSON.stringify({ p_order: oid, p_payment: pid }) }));
+
 async function createOrder(env, user, b, cors) {
   if (env.PAYMENTS_ENABLED !== "true") return json({ error: "Payments are switched off." }, 503, cors);
   if (!testModeReady(env)) return json({ error: "Razorpay TEST mode is not configured. Live payments are disabled in this build." }, 503, cors);
@@ -33,18 +39,21 @@ async function createOrder(env, user, b, cors) {
   const since = new Date(Date.now() - 36e5).toISOString();
   const recent = await rows(await db(env, "orders?select=id&user_id=eq." + q(user.id) + "&created_at=gte." + since));
   if (recent.length >= 5) return json({ error: "Too many attempts. Try again in an hour." }, 429, cors);
-  const p = plans[0];
-  const r = await fetch("https://api.razorpay.com/v1/orders", { method: "POST", headers: { "content-type": "application/json", authorization: "Basic " + btoa(env.RAZORPAY_KEY_ID + ":" + env.RAZORPAY_KEY_SECRET) }, body: JSON.stringify({ amount: p.price_paise, currency: "INR", receipt: "rtc_" + crypto.randomUUID().replace(/-/g, "").slice(0, 24), notes: { user_id: user.id, plan_id: p.id } }), signal: AbortSignal.timeout(10000) });
+  const p = plans[0];  // the price always comes from our database, never from the browser
+  const r = await fetch("https://api.razorpay.com/v1/orders", { method: "POST",
+    headers: { "content-type": "application/json", authorization: "Basic " + btoa(env.RAZORPAY_KEY_ID + ":" + env.RAZORPAY_KEY_SECRET) },
+    body: JSON.stringify({ amount: p.price_paise, currency: "INR", receipt: "rtc_" + crypto.randomUUID().replace(/-/g, "").slice(0, 24), notes: { user_id: user.id, plan_id: p.id } }), signal: AbortSignal.timeout(10000) });
   if (!r.ok) throw new Error("razorpay order " + r.status);
   const o = await r.json();
   await rows(await db(env, "orders", { method: "POST", headers: { prefer: "return=representation" }, body: JSON.stringify({ id: o.id, user_id: user.id, plan_id: p.id, amount_paise: p.price_paise }) }));
   return json({ order_id: o.id, amount: p.price_paise, currency: "INR", key_id: env.RAZORPAY_KEY_ID }, 200, cors);
 }
+// Ask Razorpay (not the browser, and not the webhook body) what really happened, then decide.
 async function confirmPayment(env, oid, pid) {
   if (!testModeReady(env)) throw new Error("Razorpay TEST mode is not configured");
   const order = (await rows(await db(env, "orders?id=eq." + q(oid))))[0];
-  if (!order) return "unknown";
-  if (order.status === "paid") return "duplicate";
+  if (!order) return "unknown";                       // not one of our orders: ignore
+  if (order.status === "paid") return "duplicate";    // already granted once
   const r = await fetch("https://api.razorpay.com/v1/payments/" + q(pid), { headers: { authorization: "Basic " + btoa(env.RAZORPAY_KEY_ID + ":" + env.RAZORPAY_KEY_SECRET) }, signal: AbortSignal.timeout(10000) });
   if (r.status === 404 || r.status === 400) return "mismatch";
   if (!r.ok) throw new Error("razorpay payment " + r.status);
@@ -53,7 +62,7 @@ async function confirmPayment(env, oid, pid) {
   if (p.status === "captured") return grant(env, oid, pid);
   if (p.status === "failed") { await rows(await db(env, "orders?id=eq." + q(oid) + "&status=eq.created", { method: "PATCH", headers: { prefer: "return=representation" }, body: JSON.stringify({ status: "failed" }) })); return "failed"; }
   if (p.status === "refunded") return "mismatch";
-  return "pending";
+  return "pending";                                   // created or authorized: money not captured yet
 }
 async function verify(env, user, b, cors) {
   const oid = String(b.razorpay_order_id || ""), pid = String(b.razorpay_payment_id || "");
@@ -65,6 +74,8 @@ async function verify(env, user, b, cors) {
   if (s === "pending") return json({ status: "pending" }, 202, cors);
   return json({ status: "failed", error: "Payment could not be confirmed." }, 400, cors);
 }
+
+
 async function exportAccount(env, user, cors) {
   const uid = q(user.id);
   const [orders, entitlements, usage] = await Promise.all([
@@ -81,6 +92,7 @@ async function deleteAccount(env, user, b, cors) {
   if (!r.ok) { console.error("account deletion provider status", r.status); return json({ error: "Account deletion failed. Your account has not been confirmed as deleted; contact support." }, 502, cors); }
   return json({ deleted: true, message: "Account and linked app records deleted." }, 200, { ...cors, "cache-control": "no-store" });
 }
+
 const AI_FEATURES = {
   summary: { system: "You are a careful research assistant. Summarize the supplied research paper text. Separate claims, methods, findings, limitations, and open questions. Do not invent details; state when the excerpt is insufficient." },
   explain: { system: "Explain the research methods, variables, and equations from the supplied paper excerpt in clear English. Preserve mathematical notation when possible. Mark uncertain OCR/extraction and never invent missing equations." },
@@ -113,9 +125,11 @@ async function aiRequest(env, user, b, cors) {
     return json({output:output.slice(0,18000),used:usedRows.length,limit,premium},200,cors);
   } finally { clearTimeout(timer); }
 }
+
 const PAY_EVENTS = ["payment.captured", "payment.authorized", "payment.failed", "order.paid"];
 async function webhook(req, env) {
   if (!testModeReady(env)) return json({ error: "Razorpay TEST mode is not configured." }, 503);
+  // Webhooks bypass the signed-in API path, so cap their payload before parsing.
   if (Number(req.headers.get("content-length") || 0) > 65536) return json({ error: "Webhook payload too large." }, 413);
   const raw = await req.text();
   if (enc.encode(raw).byteLength > 65536) return json({ error: "Webhook payload too large." }, 413);
@@ -128,18 +142,26 @@ async function webhook(req, env) {
     const e = JSON.parse(raw), P = e.payload || {}, pay = P.payment && P.payment.entity, ord = P.order && P.order.entity;
     const oid = (pay && pay.order_id) || (ord && ord.id), pid = pay && pay.id;
     if (PAY_EVENTS.includes(e.event) && oid && pid) {
-      const status = await confirmPayment(env, oid, pid);
-      if ((e.event === "payment.captured" || e.event === "order.paid") && status === "pending") throw new Error("Razorpay has not confirmed capture yet");
+      const status = await confirmPayment(env, oid, pid); // payload is only a hint
+      // A captured/paid webhook must not be acknowledged while Razorpay's API
+      // still reports the payment as pending; otherwise the event is lost forever.
+      if ((e.event === "payment.captured" || e.event === "order.paid") && status === "pending") {
+        throw new Error("Razorpay has not confirmed capture yet");
+      }
     }
-  } catch (err) {
+  } catch (err) {  // let Razorpay retry: forget this event id, then fail
     await db(env, "webhook_events?id=eq." + q(id), { method: "DELETE" }); throw err;
   }
   return json({ ok: true });
 }
 export default {
   async fetch(req, env) {
-    const u = new URL(req.url), allowedOrigin = String(env.ALLOWED_ORIGIN || ""), requestOrigin = req.headers.get("origin");
+    const u = new URL(req.url);
+    const allowedOrigin = String(env.ALLOWED_ORIGIN || "");
+    const requestOrigin = req.headers.get("origin");
     const cors = { "access-control-allow-origin": allowedOrigin || "null", "access-control-allow-headers": "authorization,content-type", "access-control-allow-methods": "POST,OPTIONS", vary: "origin" };
+    // Browser API routes are restricted to the configured site origin. Requests
+    // without Origin are still allowed for server-to-server calls and tests.
     if (u.pathname !== "/api/webhook" && requestOrigin && requestOrigin !== allowedOrigin) return json({ error: "Origin not allowed." }, 403, { vary: "origin" });
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
     if (req.method !== "POST") return json({ error: "Not found." }, 404, cors);
