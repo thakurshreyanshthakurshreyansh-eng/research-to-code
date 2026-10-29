@@ -112,4 +112,34 @@ await run("fails closed on missing credentials or inaccessible Render API", asyn
   );
 });
 
+
+await run("follows the real Render API array-of-header/cursor response shape", async () => {
+  const state = { calls: [], rules: [] };
+  const fetchImpl = async (input, options = {}) => {
+    const url = new URL(input), method = options.method || "GET";
+    const cursor = url.searchParams.get("cursor");
+    state.calls.push({ method, cursor });
+    if (method === "GET" && !state.rules.length && !cursor) {
+      return ok([
+        { header: { id: "hdr-1", path: "/*", name: "X-Custom-One", value: "keep" }, cursor: "cursor-page-2" }
+      ]);
+    }
+    if (method === "GET" && !state.rules.length && cursor === "cursor-page-2") {
+      return ok([
+        { header: { id: "hdr-2", path: "/assets/*", name: "Cache-Control", value: "public" }, cursor: "" }
+      ]);
+    }
+    if (method === "PUT") {
+      state.rules = JSON.parse(options.body);
+      return ok(state.rules);
+    }
+    if (method === "GET" && state.rules.length) return ok(state.rules.map((header, i) => ({ header: { id: "verified-" + i, ...header }, cursor: "" })));
+    throw new Error("Unexpected Render API request " + method + " cursor=" + cursor);
+  };
+  await configureRenderHeaders({ apiKey: "unit-test-token", serviceId: "srv-test123", apiBase: "https://render.example/v1", fetchImpl });
+  assert(state.calls.some(call => call.method === "GET" && call.cursor === "cursor-page-2"), "must follow the cursor attached to the last returned item");
+  assert(state.rules.some(rule => rule.name === "X-Custom-One" && rule.value === "keep"), "must preserve first-page rules");
+  assert(state.rules.some(rule => rule.name === "Cache-Control" && rule.path === "/assets/*"), "must preserve second-page rules");
+});
+
 console.log("Render security-header automation tests passed");
