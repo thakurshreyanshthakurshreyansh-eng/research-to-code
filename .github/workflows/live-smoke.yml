@@ -1,6 +1,8 @@
 name: Live deployment smoke test
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
   schedule:
     - cron: "17 */6 * * *"
@@ -11,7 +13,7 @@ permissions:
 jobs:
   live-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
