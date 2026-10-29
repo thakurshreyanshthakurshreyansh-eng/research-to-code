@@ -33,6 +33,20 @@
 3. यदि custom API/Supabase domain हो तो `_headers` CSP के `connect-src` में उस exact HTTPS origin को जोड़ें। `connect-src https:` जैसी unrestricted wildcard वापिस न जोड़ें।
 4. Deploy URL खोलें; HTTPS, redirects, status codes, CSP, security headers और browser console/network errors जाँचें। GitHub Pages `_headers` लागू नहीं करता—उस पर यह सुरक्षा नीति अपने-आप लागू नहीं होगी।
 
+## 4A. Render Static Site response headers (required for the current live host)
+
+Render Static Sites do **not** read the repository's `_headers` file. Configure the response headers in the Render Dashboard for the existing service:
+
+1. Open **research-to-code → Settings → Headers** and add each rule for path `/*`.
+2. Add `X-Frame-Options: DENY` and `Referrer-Policy: no-referrer`.
+3. Add `Content-Security-Policy` with this value (single line):
+
+```text
+default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https://api.razorpay.com https://checkout.razorpay.com; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://checkout.razorpay.com; worker-src 'self' blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co https://*.workers.dev https://research-to-code-api.onrender.com https://api.razorpay.com https://checkout.razorpay.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; frame-src https://api.razorpay.com https://checkout.razorpay.com; font-src 'self' data:
+```
+
+4. Keep the existing `X-Content-Type-Options: nosniff` and HSTS rules; do not add duplicates. Save the rules, wait for the CDN update, then rerun the **Live deployment smoke test** workflow. A green code test does not substitute for this response-header check.
+
 ## 5. Android hard-condition smoke test
 
 इनमें से हर कदम कम-से-कम एक साफ browser session और एक धीमे नेटवर्क पर जाँचें:
