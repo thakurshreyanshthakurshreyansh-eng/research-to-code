@@ -4,5 +4,5 @@ const G=[['logic','run.cjs'],['page flow','dom.cjs'],['sign-in and payment scree
   ['DOM ID/reference audit','dom-id-audit.cjs'],['Project ZIP archive structure','zip-pack.cjs'],['Render response-header automation','render-headers.test.mjs'],['live Node API adapter smoke test','server-smoke.cjs'],['sample challenge (real pytest when installed)','sample-challenge.cjs']];
 let bad=0;
 for(const [n,f] of G){const r=cp.spawnSync(process.execPath,[path.join(__dirname,f)],{encoding:'utf8'});const out=(r.stdout+r.stderr).trim().split('\n');
-  const sum=out.filter(l=>/passed|SKIP/.test(l)).pop()||out.pop();console.log((r.status===0?'OK   ':'FAIL ')+n+': '+sum);out.filter(l=>l.startsWith('FAIL')).forEach(l=>console.log('     '+l));if(r.status!==0)bad++}
+  const sum=out.filter(l=>/passed|SKIP/.test(l)).pop()||out.pop();console.log((r.status===0?'OK   ':'FAIL ')+n+': '+sum);if(r.status!==0){console.log('     Full failure output from '+f+':\\n'+out.join('\\n'));bad++}else out.filter(l=>l.startsWith('FAIL')).forEach(l=>console.log('     '+l))}
 console.log(bad?`\n${bad} test group(s) failed`:'\nAll test groups passed');process.exit(bad?1:0);
