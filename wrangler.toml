@@ -1,0 +1,6 @@
+name = "research-to-code"
+main = "worker/worker.js"
+compatibility_date = "2026-10-28"
+
+[vars]
+APP_NAME = "Research-to-Code"
