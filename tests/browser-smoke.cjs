@@ -54,6 +54,7 @@ const { chromium } = require("playwright");
         const runReport = await page.locator("#runs").innerText();
         assert.match(runReport, /Passed/i, "browser Python/pytest should execute and pass the supplied example tests; report: " + runReport.slice(0, 1800));
         assert.match(runReport, /5 passed/i, "browser pytest should report five executed passing tests; report: " + runReport.slice(0, 1800));
+        console.log("PASS mobile: real browser Pyodide/pytest execution, five sample tests passed");
       }
 
       await page.locator('#nav button[data-t="code"]').click();
