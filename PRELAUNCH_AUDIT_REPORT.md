@@ -133,3 +133,11 @@ Do not publicly launch or accept customer money until the deployment checklist i
 - Latest confirmed all-green full suite, bundle and browser run on commit `64ebb1583b1f57f441403a32b3431261588047af`: [full suite](https://github.com/thakurshreyanshthakurshreyansh-eng/research-to-code/actions/runs/40899559240), [bundle](https://github.com/thakurshreyanshthakurshreyansh-eng/research-to-code/actions/runs/40899559327), [browser regression](https://github.com/thakurshreyanshthakurshreyansh-eng/research-to-code/actions/runs/40899559246). The Render frontend and API deployments were both reported live for that revision, and its live smoke workflow was still running when checked.
 - These checks prove the **local browser tools** work in CI. They do not activate or prove live Supabase authentication, backend AI, Razorpay, real customer entitlements, legal compliance, or a hardened server-side code sandbox. Public launch remains blocked until those dependencies and owner inputs are completed.
 
+## 29 Oct 2026 — frontend response-header gate
+
+- The live HTTPS smoke check now logs the **actual response headers** from Render, rather than relying on the HTML meta policy.
+- On the latest externally checked frontend response, `X-Content-Type-Options: nosniff` and HSTS were present, but the **Content-Security-Policy response header, X-Frame-Options and Referrer-Policy response header were absent**. The HTML meta CSP/referrer fallback does not replace every response-header control; in particular, meta CSP cannot enforce `frame-ancestors`.
+- Added a launch gate: the live smoke workflow now fails if CSP, X-Frame-Options or Referrer-Policy response headers are absent. The code and browser tests can pass while this hosting-level gate fails; that is intentional and prevents a false “all clear”.
+- The current Render integration tools available for this project cannot edit static-site header rules. The owner must add the rules in [Render Static Site settings](https://dashboard.render.com/static/srv-dbhk0o8473hc73a6u22g) → Settings → Headers, following the exact safe configuration in `OWNER_ACTIONS_HI.md`, then rerun the live smoke workflow.
+- **Launch decision stays NO-GO** until those response headers are verified and the Supabase/AI/payment/legal owner-side setup and real end-to-end tests are complete.
+
