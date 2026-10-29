@@ -25,6 +25,6 @@ t('classify no tests',()=>{assert.strictEqual(ctx.classify(5,'no tests ran').sta
 t('esc blocks html',()=>{assert.strictEqual(ctx.esc('<b>"x"&'),'&lt;b&gt;&quot;x&quot;&amp;')});
 t('every $("id") exists in the page',()=>{const ids=new Set([...html.matchAll(/ id="([^"]+)"/g)].map(m=>m[1]));const used=new Set([...js.matchAll(/\$\("([^"]+)"\)/g)].map(m=>m[1]));used.forEach(u=>{if(!ids.has(u)&&u!==id_dummy)throw new Error('missing id '+u)});});
 t('no real keys shipped: settings are empty, no JWTs or sk-ant strings',()=>{assert(!/sk-ant|eyJ[A-Za-z0-9_-]{10,}|sb_secret_[A-Za-z0-9]|rzp_(live|test)_[A-Za-z0-9]{6}/.test(html));assert(/var CFG=\{SUPABASE_URL:"",SUPABASE_ANON_KEY:"",API_BASE:"",RAZORPAY_KEY_ID:"",PAYMENTS_ENABLED:false,AI_ENABLED:false\}/.test(html))});
-t('only pinned CDN hosts used',()=>{const hosts=[...html.matchAll(/https:\/\/([^/"']+)/g)].map(m=>m[1]);const ok=new Set(['cdnjs.cloudflare.com','cdn.jsdelivr.net','checkout.razorpay.com','www.w3.org']);hosts.forEach(h=>{if(!ok.has(h))throw new Error('unexpected host '+h)})});
+t('only pinned CDN hosts used',()=>{const hosts=[...html.matchAll(/https:\/\/([^/"']+)/g)].map(m=>m[1]);const ok=new Set(['cdnjs.cloudflare.com','cdn.jsdelivr.net','api.razorpay.com','checkout.razorpay.com','www.w3.org']);hosts.forEach(h=>{if(!ok.has(h))throw new Error('unexpected host '+h)})});
 var id_dummy='__none__';
 console.log(pass+' passed, '+fail+' failed');if(fail)process.exitCode=1;
