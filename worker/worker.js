@@ -108,7 +108,7 @@ async function aiRequest(env, user, b, cors) {
   const feature = String(b.feature || ""), spec = AI_FEATURES[feature];
   if (!spec) return json({error:"Unknown AI feature."},400,cors);
   const text = String(b.text || ""), code = String(b.code || ""), tests = String(b.tests || "");
-  if (text.length > 18000 || code.length > 12000 || tests.length > 4000 || text.length + code.length + tests.length > 34000) return json({error:"Input is too long. Shorten the excerpt or code and try again."},413,cors);
+  if (text.length > 18000 || code.length > 12000 || tests.length > 4000 || text.length + code.length + tests.length > 22000) return json({error:"Input is too long. Shorten the excerpt or code and try again."},413,cors);
   if ((feature === "summary" || feature === "explain" || feature === "claims") && text.trim().length < 80) return json({error:"Please provide readable paper text first."},400,cors);
   if ((feature === "improve" || feature === "tests" || feature === "fix" || feature === "compatibility") && code.trim().length < 10) return json({error:"Please provide code first."},400,cors);
   const ent = await rows(await db(env,"entitlements?select=plan_id,expires_at&user_id=eq."+q(user.id)));
