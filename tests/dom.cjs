@@ -13,7 +13,7 @@ else if(mode==='hang')send({type:'started'});
 else if(mode==='slowload')send({type:'status',text:'Downloading'});
 else if(mode==='fatal')send({type:'fatal',text:'Network error'})},5)}
 terminate(){this.dead=true}}
-const storage={};const ctx={document,window:{scrollTo(){},confirm:()=>true,addEventListener(){}},localStorage:{getItem:k=>storage[k]||null,setItem:(k,v)=>{storage[k]=v},removeItem:k=>{delete storage[k]}},navigator:{},Worker:FakeWorker,Blob,URL,performance,setTimeout,clearTimeout,setInterval,clearInterval,atob,console};
+const storage={};const ctx={document,window:{scrollTo(){},confirm:()=>true,addEventListener(){}},localStorage:{getItem:k=>storage[k]||null,setItem:(k,v)=>{storage[k]=v},removeItem:k=>{delete storage[k]}},navigator:{},Worker:FakeWorker,Blob,URL,TextEncoder,TextDecoder,performance,setTimeout,clearTimeout,setInterval,clearInterval,atob,console};
 vm.createContext(ctx);vm.runInContext(js,ctx);
 const E=id=>document.getElementById(id),latest=()=>E('runs').innerHTML.split('<div class="card">')[1]||'';
 const setCode=()=>{E('after').value='def f(): pass';E('before').value='x';E('tests').value='def test_a(): pass'};
@@ -45,7 +45,7 @@ await t('compare shows 9 added, 0 removed, 7 modified',()=>{ctx.go('result');ass
 await t('Before and After views render',()=>{['before','after','diff'].forEach(m=>{ctx.cmpMode=m;ctx.renderCompare();assert(E('cmpBox').children.length>5)})});
 await t('download button does not throw',()=>{E('dl').onclick()});
 await t('compare shows empty state when no code',()=>{E('clr').onclick();ctx.go('result');assert.strictEqual(E('resEmpty').hidden,false)});
-await t('run refuses empty code/tests and starts no worker',async()=>{await E('run').onclick();assert(/Add code and tests/.test(E('runStatus').textContent));assert.strictEqual(made,0)});
+await t('run refuses empty code/tests and starts no worker',async()=>{const beforeMade=made;await E('run').onclick();assert(/Add code and tests/.test(E('runStatus').textContent));assert.strictEqual(made,beforeMade)});
 await t('good run is recorded as Executed + Passed with 5 passed',async()=>{mode='ok';setCode();await E('run').onclick();const h=latest();assert(h.includes('Executed')&&h.includes('Passed')&&h.includes('5 passed, 0 failed'),h.slice(0,200));assert.strictEqual(E('run').disabled,false)});
 await t('chip says last run matches, then flips after edit',()=>{ctx.refreshProof();assert(E('tState').innerHTML.includes('exactly'));E('tests').value+='\n#x';ctx.refreshProof();assert(E('tState').innerHTML.includes('not run'))});
 await t('failing run shows Failed, not Passed',async()=>{mode='fail';await E('run').onclick();const h=latest();assert(h.includes('Failed')&&!h.includes('>Passed<')&&h.includes('1 failed'))});
