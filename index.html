@@ -667,8 +667,8 @@ async function askLabAI(feature){
   var ev=labEvidence(), text="", code="", tests="";
   if(feature==="claims"){
     if(ev.pdfExcerpt.trim().length<80){say("labStatus","पहले PDF पढ़ें या OCR चलाएँ; claim audit के लिए paper text चाहिए।");return}
-    text=ev.pdfExcerpt;
-    code="CURRENT CODE:\n"+ev.afterCode+"\n\nBASELINE CODE:\n"+ev.beforeCode;
+    text=ev.pdfExcerpt.slice(0,15000);
+    code=("CURRENT CODE:\n"+ev.afterCode+"\n\nBASELINE CODE:\n"+ev.beforeCode).slice(0,3000);
     tests=ev.tests+"\n\nLATEST EXECUTED RUN EVIDENCE (not paper reproduction):\n"+JSON.stringify(ev.latestRun);
   }else if(feature==="compatibility"){
     if(ev.beforeCode.trim().length<10||ev.afterCode.trim().length<10){say("labStatus","Code tab में Before और After दोनों versions डालें।");return}
