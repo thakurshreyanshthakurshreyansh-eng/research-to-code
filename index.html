@@ -656,13 +656,30 @@ function labEvidence(){
 }
 function refreshLabStatus(){
   var ready=!!(CFG.AI_ENABLED&&CFG.API_BASE&&cfgOk()&&session);
-  ["labClaims","labCompat","labFix"].forEach(function(id){var b=$(id);if(b)b.disabled=labBusy||(id==="labFix"&&!ready)});
+  ["labClaims","labCompat","labFix"].forEach(function(id){var b=$(id);if(b)b.disabled=labBusy});
   if(!ready&&!labBusy)say("labStatus","Local claim-evidence और compatibility checks उपलब्ध हैं। AI-powered fix के लिए sign-in, API और AI provider configuration चाहिए।");
   else if(ready&&!labBusy)say("labStatus","AI endpoint configured है। AI चलाने से पहले ऊपर consent checkbox चुनें।");
 }
 function runLocalLabAnalysis(feature){
   var ev=labEvidence(), report={mode:"local-only",generatedAt:new Date().toISOString(),note:"This report inventories evidence; it does not verify scientific truth and does not replace AI review."};
-  if(feature==="claims"){
+  if(feature==="fix"){
+    report.title="Fix → Retest — local failure diagnosis";
+    var r=ev.latestRun,log=((r&&r.error)||"")+"\\n"+((r&&r.output)||"");
+    var hints=[];
+    if(!r)hints.push("अभी कोई test run नहीं है: पहले Proof tab में tests चलाएँ ताकि वास्तविक failure मिले।");
+    else if(!r.ran)hints.push("Latest run execute नहीं हुआ; browser runner का startup error देखें।");
+    else if(r.status==="passed")hints.push("Latest recorded run पास हुआ। नया failure reproduce करें या अतिरिक्त edge-case tests जोड़ें।");
+    else if(/SyntaxError|IndentationError/.test(log))hints.push("Python syntax/indentation error: reported line के आसपास brackets, colons, quotes और indentation जाँचें।");
+    if(/ModuleNotFoundError|ImportError/.test(log))hints.push("Import error: module का नाम, runtime में उसकी उपलब्धता और dependency assumptions जाँचें।");
+    if(/AssertionError/.test(log))hints.push("Assertion failed: expected और actual values की तुलना करें; test को सिर्फ पास कराने के लिए कमजोर न करें।");
+    if(/NameError/.test(log))hints.push("NameError: variable/function spelling, scope और definition order जाँचें।");
+    if(/TypeError/.test(log))hints.push("TypeError: argument count, value types और None/empty values वाले edge cases जाँचें।");
+    if(/timed out|timeout/i.test((r&&r.status)||""))hints.push("Timeout: loop termination और algorithmic complexity जाँचें; छोटा reproducible test चलाएँ।");
+    if(!hints.length)hints.push("Failure log में पहला traceback/error पढ़ें, उसे छोटा reproducible case बनाएं, एक बदलाव करें और पूरा test suite फिर चलाएँ।");
+    report.latestRun=r;
+    report.diagnosis={status:r?r.status:"not-run",ran:!!(r&&r.ran),codeMatchesCurrent:!!(r&&r.codeMatchesCurrent),testsMatchCurrent:!!(r&&r.testsMatchCurrent),hints:hints,rawError:String((r&&r.error)||"").slice(0,4000),rawOutput:String((r&&r.output)||"").slice(0,8000)};
+    report.nextAction="Local diagnosis cannot safely invent or apply a source-code patch. Configure the AI provider for generated fixes, then review and retest the suggested code.";
+  }else if(feature==="claims"){
     report.title="Claims vs Real Tests — local evidence inventory";
     report.paper={extractedTextAvailable:ev.pdfTextChars>=80,characters:ev.pdfTextChars,claimExtraction:"Not performed locally; AI provider is not configured."};
     report.code={beforePresent:ev.beforeCode.trim().length>0,afterPresent:ev.afterCode.trim().length>0};
@@ -683,7 +700,7 @@ function runLocalLabAnalysis(feature){
 }
 async function askLabAI(feature){
   if(labBusy)return;
-  if(feature!=="fix"&&(!CFG.AI_ENABLED||!CFG.API_BASE||!cfgOk()||!session)){runLocalLabAnalysis(feature);return}
+  if(!CFG.AI_ENABLED||!CFG.API_BASE||!cfgOk()||!session){runLocalLabAnalysis(feature);return}
   if(!$("labConsent").checked){say("labStatus","पहले AI data-sharing consent चुनें।");return}
   if(!sb||!session||!CFG.API_BASE||!CFG.AI_ENABLED){say("labStatus","AI-powered fix के लिए sign-in और configured backend/provider चाहिए।");return}
   var ev=labEvidence(), text="", code="", tests="";
