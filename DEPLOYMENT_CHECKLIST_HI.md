@@ -47,6 +47,21 @@ default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; 
 
 4. Keep the existing `X-Content-Type-Options: nosniff` and HSTS rules; do not add duplicates. Save the rules, wait for the CDN update, then rerun the **Live deployment smoke test** workflow. A green code test does not substitute for this response-header check.
 
+## 4B. Automated Render response-header configuration (preferred)
+
+Repository में `.github/workflows/configure-render-headers.yml` उपलब्ध है। यह workflow केवल manual dispatch पर production settings बदलता है और confirmation में `APPLY` मांगता है।
+
+1. GitHub → Settings → Secrets and variables → Actions में `RENDER_API_KEY` secret बनाएं। Key में इस Render service के header rules read/update करने की अनुमति होनी चाहिए। Secret को code, logs, ZIP या chat में न डालें।
+2. Actions → Configure Render security headers → Run workflow चलाएं और confirmation में ठीक `APPLY` लिखें।
+3. Workflow मौजूदा Render header rules पढ़ता है, unrelated rules बचाता है, इन तीन headers को idempotently configure करता है और Render API से उन्हें फिर पढ़कर verify करता है:
+   - `Content-Security-Policy` (CSP में `frame-ancestors 'none'` सहित)
+   - `X-Frame-Options: DENY`
+   - `Referrer-Policy: no-referrer`
+4. इसके बाद वास्तविक live frontend/API smoke test चलता है। यह green न हो तो production launch blocked रहे।
+5. यदि API key या permission उपलब्ध नहीं हो, Render Dashboard → Static Site → Settings → Headers में section 4A वाले नियम manually set करें, फिर Actions → Live deployment smoke test manually चलाएं।
+
+Automated helper के tests full CI suite का हिस्सा हैं। Header rules सेट करने की कोशिश स्वयं successful configuration का प्रमाण नहीं है; अंतिम प्रमाण actual live smoke test का pass होना है।
+
 ## 5. Android hard-condition smoke test
 
 इनमें से हर कदम कम-से-कम एक साफ browser session और एक धीमे नेटवर्क पर जाँचें:

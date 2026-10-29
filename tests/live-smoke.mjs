@@ -39,6 +39,15 @@ console.log("Frontend response security headers: " + JSON.stringify(Object.fromE
 for (const name of ["content-security-policy", "x-frame-options", "referrer-policy"]) {
   assert.ok(frontend.headers.has(name), "Frontend response missing required security header: " + name);
 }
+const frontendCsp = frontend.headers.get("content-security-policy") || "";
+for (const directive of ["default-src 'self'", "object-src 'none'", "frame-ancestors 'none'", "https://research-to-code-api.onrender.com", "https://*.supabase.co"]) {
+  assert.ok(frontendCsp.includes(directive), "Frontend CSP is missing required directive/source: " + directive);
+}
+assert.ok(!frontendCsp.includes("connect-src 'self' https:;"), "Frontend CSP must not permit arbitrary HTTPS connections");
+assert.equal((frontend.headers.get("x-frame-options") || "").toUpperCase(), "DENY", "Frontend must reject framing");
+assert.equal(frontend.headers.get("referrer-policy"), "no-referrer", "Frontend referrer policy must be explicit");
+assert.equal(frontend.headers.get("x-content-type-options"), "nosniff", "Frontend must block MIME sniffing");
+assert.ok((frontend.headers.get("strict-transport-security") || "").toLowerCase().startsWith("max-age="), "Frontend HSTS must be present");
 const html = await frontend.text();
 assert.ok(html.toLowerCase().includes("<html"), "Frontend should serve HTML");
 assert.match(html, /Research to Code/i, "Expected app title/brand missing");
@@ -61,6 +70,11 @@ for (const name of [
   assert.ok(api.headers.has(name), "API response missing security header: " + name);
 }
 assert.equal(api.headers.get("x-content-type-options"), "nosniff");
+assert.equal((api.headers.get("x-frame-options") || "").toUpperCase(), "DENY", "API must reject framing");
+assert.equal(api.headers.get("referrer-policy"), "no-referrer", "API must suppress referrers");
+const apiCsp = api.headers.get("content-security-policy") || "";
+assert.ok(apiCsp.includes("default-src 'none'") && apiCsp.includes("frame-ancestors 'none'"), "API CSP must deny browser content and framing");
+assert.ok((api.headers.get("strict-transport-security") || "").toLowerCase().startsWith("max-age="), "API HSTS must be present");
 
 console.log("PASS live frontend: HTTP 200, app shell, entry gate, demo disabled, core controls");
 console.log("PASS live API: HTTP 200, health JSON, five security headers");
