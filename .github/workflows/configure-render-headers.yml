@@ -1,0 +1,47 @@
+name: Configure Render security headers
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type APPLY to update production frontend response headers
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  reject-unconfirmed:
+    if: ${{ inputs.confirmation != 'APPLY' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refuse an unconfirmed production change
+        run: |
+          echo "::error::No changes made. Re-run and enter APPLY exactly to confirm."
+          exit 1
+
+  configure-and-verify:
+    if: ${{ inputs.confirmation == 'APPLY' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Apply and verify Render response-header rules
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_FRONTEND_SERVICE_ID: srv-dbhk0o8473hc73a6u22g
+        run: node scripts/configure_render_headers.mjs
+
+      - name: Allow edge configuration to propagate
+        run: sleep 20
+
+      - name: Verify actual production frontend and API headers
+        run: node tests/live-smoke.mjs
