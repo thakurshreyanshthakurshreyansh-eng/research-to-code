@@ -43,7 +43,7 @@ const frontendCsp = frontend.headers.get("content-security-policy") || "";
 for (const directive of ["default-src 'self'", "object-src 'none'", "frame-ancestors 'none'", "https://research-to-code-api.onrender.com", "https://*.supabase.co"]) {
   assert.ok(frontendCsp.includes(directive), "Frontend CSP is missing required directive/source: " + directive);
 }
-assert.ok(!/connect-src\\s+'self'\\s+https:;/i.test(frontendCsp), "Frontend CSP must not permit arbitrary HTTPS connections");
+assert.ok(!frontendCsp.includes("connect-src 'self' https:;"), "Frontend CSP must not permit arbitrary HTTPS connections");
 assert.equal((frontend.headers.get("x-frame-options") || "").toUpperCase(), "DENY", "Frontend must reject framing");
 assert.equal(frontend.headers.get("referrer-policy"), "no-referrer", "Frontend referrer policy must be explicit");
 assert.equal(frontend.headers.get("x-content-type-options"), "nosniff", "Frontend must block MIME sniffing");
