@@ -39,7 +39,7 @@ on conflict (id) do nothing;
 
 -- One transaction: mark the order paid exactly once and extend the plan.
 create function public.grant_order(p_order text, p_payment text) returns text
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = pg_catalog, public as $
 declare o public.orders; d int; cur timestamptz;
 begin
   update public.orders set status='paid', payment_id=p_payment, paid_at=now()
@@ -75,7 +75,7 @@ create policy "service role only webhook events" on public.webhook_events for al
 
 -- Atomically enforce a monthly per-user request quota; only the service role may call it.
 create function public.consume_ai_quota(p_user uuid, p_feature text, p_limit integer, p_input_chars integer)
-returns boolean language plpgsql security definer set search_path = public as $$
+returns boolean language plpgsql security definer set search_path = pg_catalog, public as $
 declare n integer;
 begin
   if p_limit < 1 or p_input_chars < 0 or p_input_chars > 22000 or p_feature not in ('summary','explain','improve','tests','claims','compatibility','fix') then return false; end if;
