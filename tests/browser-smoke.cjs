@@ -56,6 +56,8 @@ const { chromium } = require("playwright");
         assert.match(runReport, /5 passed/i, "browser pytest should report five executed passing tests; report: " + runReport.slice(0, 1800));
       }
 
+      await page.locator('#nav button[data-t="code"]').click();
+
       // Export is a real browser download, not just a click handler.
       const downloadPromise = page.waitForEvent("download");
       await page.locator("#exportWorkspace").click();
