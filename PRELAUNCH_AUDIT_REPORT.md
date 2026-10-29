@@ -124,3 +124,12 @@ Do not publicly launch or accept customer money until the deployment checklist i
 - The API and frontend Render deployments were both reported live on commit `33abc4182149a9fff42ae723c6591a1d0fa35b91`. A fresh live smoke run was in progress when this note was drafted; check the latest workflow result for the newest commit.
 - This browser test uses the repository's local preview mode. It does **not** prove that hosted Supabase authentication, AI, payment processing, mobile-device installation, or production response headers are configured. Public customer launch remains blocked by the owner-side items above.
 
+## 29 Oct 2026 — final responsive/browser regression pass
+
+- A real Chromium layout assertion found a **5 px horizontal overflow on 390 px mobile**, caused by the header's brand and action controls sharing one row. Added a narrow-screen header wrap in `index.html`; the responsive regression now passes at 360×800, 390×844 and 1280×900.
+- Expanded browser regression to verify code/result/PDF views do not create document-level horizontal overflow.
+- Browser checks now exercise workspace JSON **export and import round-trip**, actual PDF.js text extraction using a generated valid one-page PDF, invalid-PDF rejection, local draft status, theme/language changes, and navigation.
+- The mobile scenario runs the actual Pyodide/pytest worker and verifies **five sample tests pass**. It also waits for service-worker activation, turns the browser offline, and confirms the cached app shell still opens.
+- Latest confirmed all-green full suite, bundle and browser run on commit `64ebb1583b1f57f441403a32b3431261588047af`: [full suite](https://github.com/thakurshreyanshthakurshreyansh-eng/research-to-code/actions/runs/40899559240), [bundle](https://github.com/thakurshreyanshthakurshreyansh-eng/research-to-code/actions/runs/40899559327), [browser regression](https://github.com/thakurshreyanshthakurshreyansh-eng/research-to-code/actions/runs/40899559246). The Render frontend and API deployments were both reported live for that revision, and its live smoke workflow was still running when checked.
+- These checks prove the **local browser tools** work in CI. They do not activate or prove live Supabase authentication, backend AI, Razorpay, real customer entitlements, legal compliance, or a hardened server-side code sandbox. Public launch remains blocked until those dependencies and owner inputs are completed.
+
