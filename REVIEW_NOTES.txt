@@ -1,0 +1,6 @@
+Review notes
+
+- The repository upload is incomplete until the original index.html and all remaining source/archive files are present.
+- Some files added during setup may be reconstructed rather than byte-for-byte copies of the original ZIP.
+- Verify the complete ZIP inventory against the GitHub tree before deployment.
+- Do not deploy until source completeness and application tests are confirmed.
