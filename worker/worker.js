@@ -159,7 +159,7 @@ export default {
     const u = new URL(req.url);
     const allowedOrigin = String(env.ALLOWED_ORIGIN || "");
     const requestOrigin = req.headers.get("origin");
-    const cors = { "access-control-allow-origin": allowedOrigin || "null", "access-control-allow-headers": "authorization,content-type", "access-control-allow-methods": "POST,OPTIONS", vary: "origin" };
+    const cors = { "access-control-allow-origin": allowedOrigin || "null", "access-control-allow-headers": "authorization,content-type", "access-control-allow-methods": "GET,POST,OPTIONS", vary: "origin" };
     // Browser API routes are restricted to the configured site origin. Requests
     // without Origin are still allowed for server-to-server calls and tests.
     if (u.pathname !== "/api/webhook" && requestOrigin && requestOrigin !== allowedOrigin) return json({ error: "Origin not allowed." }, 403, { vary: "origin" });
