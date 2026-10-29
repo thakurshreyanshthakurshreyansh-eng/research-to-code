@@ -48,7 +48,7 @@ await run("adds required headers while preserving unrelated host rules", async (
     fetchImpl
   });
   assert.equal(result.changed, true);
-  assert.equal(result.applied.length, 3);
+  assert.equal(result.applied.length, 5);
   assert.equal(state.calls.filter(call => call.method === "PUT").length, 1);
   for (const required of REQUIRED_HEADERS) {
     assert.equal(state.rules.filter(rule => rule.path === required.path && rule.name.toLowerCase() === required.name.toLowerCase()).length, 1);
