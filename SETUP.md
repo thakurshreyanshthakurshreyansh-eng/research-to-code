@@ -28,6 +28,22 @@ Note: Supabase's built-in email sender is limited and meant for testing. Real us
 2. Authorized redirect URI: copy it from Supabase > Authentication > Providers > Google (it ends with /auth/v1/callback).
 3. Paste Google's Client ID and Client Secret into that Supabase page and save. The secret goes only there.
 
+## C. API service on Render (created for this deployment)
+
+A Node adapter now hosts `worker/worker.js` as a separate Render web service:
+- API URL: `https://research-to-code-api.onrender.com`
+- Dashboard: `https://dashboard.render.com/web/srv-dbhld12jnfac73aab0a0`
+- Liveness endpoint: `https://research-to-code-api.onrender.com/health`
+- Runtime: Node 20+, free plan. Free instances may sleep when idle, so expect cold starts.
+
+In the API service's Environment settings, set:
+- `SUPABASE_ANON_KEY`: the same public publishable/anon key used by the website.
+- `SUPABASE_SERVICE_ROLE_KEY`: the Supabase service-role secret (Secret field only).
+- `AI_API_URL`, `AI_API_KEY` (Secret field), and `AI_MODEL` only after selecting and reviewing a provider.
+- Keep `AI_ENABLED=false` and `PAYMENTS_ENABLED=false` until real integration tests pass. Never use live payment keys in this stage.
+
+Only after the API's Supabase keys are configured, set `API_BASE=https://research-to-code-api.onrender.com` in the frontend Static Site's Environment settings. Do not point the frontend at an API that has not been configured; account export/delete and other API-backed operations will fail.
+
 ## C. Cloudflare Worker (free tier)
 1. dash.cloudflare.com > Workers & Pages > Create > Worker. Open the code editor, replace everything with worker/worker.js, Deploy.
 2. Settings > Variables and Secrets. Plain text: SUPABASE_URL, SUPABASE_ANON_KEY, ALLOWED_ORIGIN (your site origin only, like https://name.github.io, no path), PAYMENTS_ENABLED = false initially, PAYMENT_MODE = test.
