@@ -12,10 +12,12 @@ create table public.orders(
   status text not null default 'created' check (status in ('created','paid','failed')),
   payment_id text, created_at timestamptz not null default now(), paid_at timestamptz);
 create index on public.orders(user_id, created_at);
+create index on public.orders(plan_id);
 create table public.entitlements(
   user_id uuid primary key references auth.users(id) on delete cascade,
   plan_id text not null references public.plans(id),
   expires_at timestamptz not null);
+create index on public.entitlements(plan_id);
 create table public.webhook_events(id text primary key, received_at timestamptz not null default now());
 
 alter table public.plans enable row level security;
@@ -23,8 +25,8 @@ alter table public.orders enable row level security;
 alter table public.entitlements enable row level security;
 alter table public.webhook_events enable row level security;
 create policy "active plans are public" on public.plans for select using (active);
-create policy "users read own orders" on public.orders for select using (auth.uid() = user_id);
-create policy "users read own entitlement" on public.entitlements for select using (auth.uid() = user_id);
+create policy "users read own orders" on public.orders for select to authenticated using ((select auth.uid()) = user_id);
+create policy "users read own entitlement" on public.entitlements for select to authenticated using ((select auth.uid()) = user_id);
 -- No insert/update/delete policies exist: only the server (service role key) can write.
 revoke insert, update, delete on public.plans, public.orders, public.entitlements, public.webhook_events from anon, authenticated;
 revoke all on public.webhook_events from anon, authenticated;
