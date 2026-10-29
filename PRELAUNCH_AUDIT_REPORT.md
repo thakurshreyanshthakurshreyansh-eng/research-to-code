@@ -115,3 +115,12 @@ Do not publicly launch or accept customer money until the deployment checklist i
 
 **Decision remains: NOT READY FOR PUBLIC CUSTOMER LAUNCH.** Automated checks and the current deployment smoke test are green, but they cannot replace the missing credentials, provider integrations, legal details, and real-device testing.
 
+## 29 Oct 2026 — real-browser regression pass
+
+- Added `tests/browser-smoke.cjs` and a dedicated Playwright workflow. The test runs in Chromium at 390×844 mobile and 1280×900 desktop viewports.
+- The browser regression covers the local preview entry, theme and language controls, navigation, code comparison output, example loading, real workspace JSON download, invalid-PDF rejection, and draft-save status.
+- The mobile pass also launches the real browser Pyodide + pytest worker and asserts that the included example's five tests pass. This exercises the browser execution feature rather than only checking its button.
+- Latest successful browser run before the latest logging-only change: [run 40897365514](https://github.com/thakurshreyanshthakurshreyansh-eng/research-to-code/actions/runs/40897365514). It passed both viewport scenarios; a subsequent commit only adds an explicit log line for the Python result and triggers a fresh validation run.
+- The API and frontend Render deployments were both reported live on commit `33abc4182149a9fff42ae723c6591a1d0fa35b91`. A fresh live smoke run was in progress when this note was drafted; check the latest workflow result for the newest commit.
+- This browser test uses the repository's local preview mode. It does **not** prove that hosted Supabase authentication, AI, payment processing, mobile-device installation, or production response headers are configured. Public customer launch remains blocked by the owner-side items above.
+
