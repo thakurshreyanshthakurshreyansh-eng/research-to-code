@@ -27,6 +27,7 @@ ok('Users can only read their own orders and entitlement',/policy "users read ow
 ok('Browser cannot write to any table',/revoke insert, update, delete on public\.plans, public\.orders, public\.entitlements, public\.webhook_events from anon, authenticated/.test(sql)&&!/create policy[^;]*for (insert|update|delete)/.test(sql));
 ok('Website contains no server secret names',!/SERVICE_ROLE_KEY|KEY_SECRET|WEBHOOK_SECRET/.test(idx));
 ok('Website settings ship empty and are documented',/var CFG=\{SUPABASE_URL:"",SUPABASE_ANON_KEY:"",API_BASE:"",RAZORPAY_KEY_ID:"",PAYMENTS_ENABLED:false,AI_ENABLED:false\}/.test(idx)&&['SUPABASE_URL','SUPABASE_ANON_KEY','API_BASE','PAYMENTS_ENABLED'].every(k=>setup.includes(k)));
+ok('Render build validates optional Worker origin and test-only Razorpay public ID without enabling paid features',/API_BASE/.test(cfg)&&/workers\\.dev/.test(cfg)&&/RAZORPAY_KEY_ID/.test(cfg)&&/PAYMENTS_ENABLED:false,AI_ENABLED:false/.test(cfg)&&/rzp_test_/.test(cfg));
 ok('Worker checks Razorpay payment status, order, amount and currency',wk.includes('/v1/payments/')&&/p\.status === "captured"/.test(wk)&&/p\.order_id !== oid/.test(wk)&&/p\.amount !== order\.amount_paise/.test(wk)&&/p\.currency !== "INR"/.test(wk));
 ok('Premium is granted only through confirmPayment (one grant call, 3 uses)',(wk.match(/grant\(env/g)||[]).length===1&&(wk.match(/confirmPayment\(env/g)||[]).length>=3);
 ok('Payments are off by default (website and Worker)',/PAYMENTS_ENABLED:false/.test(idx)&&/PAYMENTS_ENABLED !== "true"/.test(wk));
