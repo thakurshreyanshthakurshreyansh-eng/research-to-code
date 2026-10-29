@@ -30,6 +30,9 @@ create policy "users read own entitlement" on public.entitlements for select to 
 -- No insert/update/delete policies exist: only the server (service role key) can write.
 revoke insert, update, delete on public.plans, public.orders, public.entitlements, public.webhook_events from anon, authenticated;
 revoke all on public.webhook_events from anon, authenticated;
+-- Required Data API read privileges; row-level security still restricts visible rows.
+grant select on public.plans to anon, authenticated;
+grant select on public.orders, public.entitlements to authenticated;
 
 -- TEST MODE ONLY: a ₹1 test plan for exercising the checkout flow.
 -- Razorpay TEST mode does not charge real money. Do not use this as a live offer.
