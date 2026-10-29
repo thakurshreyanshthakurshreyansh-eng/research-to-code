@@ -31,7 +31,7 @@ jobs:
           base64 --decode /tmp/website-bundle.xz.b64 > /tmp/website-bundle.tar.xz
           mkdir -p /tmp/imported
           tar -xJf /tmp/website-bundle.tar.xz -C /tmp/imported
-          SOURCE=/tmp/imported/Research-to-Code-GITHUB-READY
+          SOURCE=/tmp/imported
           test -s "$SOURCE/index.html"
           test -s "$SOURCE/worker/worker.js"
           rsync -a --exclude='.pytest_cache' --exclude='__pycache__' --exclude='.DS_Store' "$SOURCE"/ ./
