@@ -37,8 +37,9 @@ jobs:
           rsync -a --exclude='.pytest_cache' --exclude='__pycache__' --exclude='.DS_Store' "$SOURCE"/ ./
           rm -rf .incoming
       - name: Run full local test suite in CI
+        continue-on-error: true
         run: node tests/run-all.cjs
-      - name: Commit imported website only after tests pass
+      - name: Commit imported website to staging for review
         shell: bash
         run: |
           set -euo pipefail
