@@ -32,7 +32,7 @@ Note: Supabase's built-in email sender is limited and meant for testing. Real us
 1. dash.cloudflare.com > Workers & Pages > Create > Worker. Open the code editor, replace everything with worker/worker.js, Deploy.
 2. Settings > Variables and Secrets. Plain text: SUPABASE_URL, SUPABASE_ANON_KEY, ALLOWED_ORIGIN (your site origin only, like https://name.github.io, no path), PAYMENTS_ENABLED = false initially, PAYMENT_MODE = test.
 3. Secrets (type "Secret"): SUPABASE_SERVICE_ROLE_KEY. For payment testing later, add RAZORPAY_KEY_ID as a plain variable beginning `rzp_test_`, and RAZORPAY_KEY_SECRET plus RAZORPAY_WEBHOOK_SECRET as Secrets. Never use `rzp_live_` keys in this build.
-4. Copy the Worker address (https://....workers.dev).
+4. Copy the Worker address (https://....workers.dev). Verify its `/health` URL returns `{"status":"ok","service":"research-to-code-api"}`. This checks Worker liveness only, not database/auth/AI/payment health.
 5. The Worker also exposes authenticated `/api/account/export` and `/api/account/delete` endpoints. Export returns up to 1,000 recent orders, the current entitlement and up to 5,000 AI-usage metadata rows; the response declares these limits. Deletion requires `DELETE_MY_ACCOUNT`, uses the Supabase Admin API, and cascades app rows linked to `auth.users`. Test both on a disposable test account first. Deletion does not issue refunds or erase external-provider records.
 
 ## D. Website
