@@ -12,8 +12,8 @@
 
 ## शेष वास्तविक सेटअप
 1. **Supabase:** project में `supabase/schema.sql` लागू करें; Email OTP configure करें; Site URL/redirect allowlist सेट करें; Google OAuth तभी चालू करें जब credentials तैयार हों.
-2. **Cloudflare Worker:** `wrangler.toml` से deploy करें. Worker variables में `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `ALLOWED_ORIGIN=https://research-to-code.onrender.com` सेट करें. `SUPABASE_SERVICE_ROLE_KEY` केवल Secret field में रखें. पहले `/health` जाँचें.
-3. **Render:** `API_BASE` को वास्तविक Worker के `https://….workers.dev` origin पर सेट करें. `SUPABASE_URL` और `SUPABASE_ANON_KEY` की पुष्टि करें. Build command `python3 scripts/configure_site.py`, publish directory `.`.
+2. **API service (already deployed):** [Render API dashboard](https://dashboard.render.com/web/srv-dbhld12jnfac73aab0a0). URL: `https://research-to-code-api.onrender.com`. `SUPABASE_URL` और `ALLOWED_ORIGIN` पहले से सेट हैं. यहाँ `SUPABASE_ANON_KEY` जोड़ें और `SUPABASE_SERVICE_ROLE_KEY` को Secret field में डालें. पहले [health endpoint](https://research-to-code-api.onrender.com/health) खोलकर liveness जाँचें.
+3. **Frontend-to-API wiring:** केवल API service में दोनों Supabase keys सुरक्षित रूप से सेट करने के बाद Static Site environment में `API_BASE=https://research-to-code-api.onrender.com` जोड़ें. Frontend build command `python3 scripts/configure_site.py`, publish directory `.` ही रखें. Free API instance idle होने पर sleep कर सकता है.
 4. **AI:** चुने गए provider की pricing/privacy जाँचकर `AI_API_URL`, `AI_API_KEY` (secret), `AI_MODEL` सेट करें. पहले low-cost quota/timeout tests करें. Credentials उपलब्ध होने तक `AI_ENABLED` बंद रखें.
 5. **Payments:** Razorpay TEST credentials और webhook secret केवल Worker secrets में; `PAYMENT_MODE=test`; `PAYMENTS_ENABLED=true` सिर्फ तब जब schema लागू हो और test checkout end-to-end चलाया जा सके. कोई live key/charge नहीं.
 6. **Security/browser:** Render response headers को deployed HTTPS response में verify करें; CSP, HSTS, frame protection, MIME sniffing/referrer policy जाँचें. Android Chrome में sign-in, PDF, code tests, AI consent, export/delete और responsive layout smoke-test करें.
