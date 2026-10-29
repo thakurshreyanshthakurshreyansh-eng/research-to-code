@@ -131,7 +131,7 @@ html{scroll-behavior:auto}body{background:var(--bg);letter-spacing:0}.card,.btn,
 .langSelect{min-height:42px;min-width:104px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--ink);font:600 14px system-ui;padding:7px 10px}
 .gateCard{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:clamp(18px,5vw,26px);box-shadow:0 12px 35px rgba(15,23,42,.06)}
 .gateIcon{font-size:28px;margin-bottom:8px}.gateCard h1{font-size:clamp(26px,7vw,34px);letter-spacing:-.7px;margin:5px 0 10px}.gateCard .mut{line-height:1.55}.gateDivider{display:flex;align-items:center;gap:10px;color:var(--mut);font-size:12px;margin:14px 0}.gateDivider:before,.gateDivider:after{content:"";height:1px;background:var(--line);flex:1}.gateMessage{font-size:13px;line-height:1.55;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);margin:12px 0}.gateButtons{display:grid;gap:10px;margin-top:14px}.gateButtons .btn{margin:0}.gateFine{font-size:12px;color:var(--mut);margin:14px 0 0;line-height:1.5}
-body:not(.app-unlocked) .wrap,body:not(.app-unlocked)>#nav{display:none!important}
+body.app-unlocked #gateScreen{display:none!important} body:not(.app-unlocked) .wrap,body:not(.app-unlocked)>#nav{display:none!important}
 [hidden]{display:none!important}
 button,select,label.drop{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
