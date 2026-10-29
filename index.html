@@ -517,8 +517,23 @@ function applyLanguage(lang){
   // Keep status labels truthful and adjust theme/account labels without erasing icons.
   var theme=$("themeToggle"),th=getTheme();if(theme){theme.textContent=currentLang==="en"?(th==="dark"?"☀ Light":th==="light"?"☾ Dark":"◐ Theme"):(th==="dark"?"☀ लाइट":th==="light"?"☾ डार्क":"◐ थीम")}
   var act=$("acBtn");if(act)act.textContent=session?(currentLang==="en"?"Account":"अकाउंट"):(currentLang==="en"?"Sign in":"साइन इन");
+  translateStaticUi();
   NAMES=currentLang==="en"?NAV_EN:{home:"होम",paper:"PDF",code:"कोड",proof:"टेस्ट",launch:"लॉन्च"};renderNav();
   var active=document.querySelector?document.querySelector(".tab.on"):null;if(active)nav.querySelectorAll("button").forEach(function(b){if(b.dataset.t===active.id)b.setAttribute("aria-current","page")});
+}
+
+var STATIC_TRANSLATIONS=[
+["15 MB और 100 पेज तक","Up to 15 MB and 100 pages"],["मिले हुए सेक्शन","Sections found"],["एल्गोरिदम और समीकरण","Algorithms and equations"],["निकाला गया टेक्स्ट","Extracted text"],["पहले वाला","Before"],["बाद वाला","After"],["बदलाव","Changes"],["जोड़ी गईं","added"],["हटाई गईं","removed"],["बदली गईं","modified"],["नहीं चला","Not run"],["चलाया गया","Executed"],["टेस्ट","Tests"],["पेपर का सारांश","Paper summary"],["तरीके और समीकरण","Methods and equations"],["कोड सुधारें","Improve code"],["टेस्ट बनाएँ","Generate tests"],["AI का आउटपुट","AI output"],["अभी कोई आउटपुट नहीं।","No output yet."],["उपयोग","Usage"],["आपके डिवाइस से क्या बाहर जाता है","What leaves your device"],["मदद और डायग्नोस्टिक्स","Help & diagnostics"],["नीतियाँ (ड्राफ्ट)","Policies (draft)"],["लॉन्च कंट्रोल सेंटर","Launch control center"],["लॉन्च प्रगति","Launch progress"],["सुरक्षा:","Security:"],["1. होस्टिंग और GitHub","1. Hosting and GitHub"],["2. लॉगिन और डेटाबेस","2. Sign-in and database"],["3. AI और PDF","3. AI and PDF"],["4. सुरक्षित कोड रनिंग","4. Secure code execution"],["5. पेमेंट और प्लान","5. Payments and plans"],["6. सुरक्षा, नीति और गुणवत्ता","6. Security, policies and quality"],["चेकलिस्ट डाउनलोड करें (.json)","Download checklist (.json)"],["सभी टिक रीसेट करें","Reset all ticks"],["अकाउंट और साइन-अप","Account and sign-in"],["प्लान और फ़ीचर","Plans and features"],["बिना अकाउंट आगे बढ़ें","Continue without an account"],["＋ PDF चुनें","＋ Choose PDF"],["तुलना देखें ›","Compare plans ›"]
+];
+function translateStaticUi(){
+ var en=currentLang==="en",w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null),n;
+ while((n=w.nextNode())){
+  var p=n.parentElement;if(!p||p.closest("script,style,textarea,code,pre,.lang-hi,.lang-en"))continue;
+  var raw=n.nodeValue,t=raw.trim();if(!t)continue;
+  for(var i=0;i<STATIC_TRANSLATIONS.length;i++){var h=STATIC_TRANSLATIONS[i][0],e=STATIC_TRANSLATIONS[i][1];if(t===h||t===e){n.nodeValue=raw.replace(t,en?e:h);break}}
+ }
+ var pairs=[["भाषा चुनें","Choose language"],["थीम बदलें","Change theme"],["कोड पहले","Code before"]];
+ document.querySelectorAll("input,button,select,textarea,label").forEach(function(el){["placeholder","aria-label","title"].forEach(function(a){var v=el.getAttribute(a);if(!v)return;pairs.forEach(function(q){if(v===q[0]||v===q[1])el.setAttribute(a,en?q[1]:q[0])})})});
 }
 function go(id){
   currentPage=id;
@@ -756,8 +771,7 @@ var LOCAL_PREVIEW=(typeof location!=="undefined"&&(location.protocol==="file:"||
 function setGateMessage(t){var el=$("gateStatus");if(el)el.textContent=t||""}
 function setupGate(){
   var configured=cfgOk();
-  $("gateAuthForms").hidden=false; /* Keep sign-in controls visible; setupGate reports when auth is not configured. */
-  $("gateSendOtp").disabled=!configured;$("gateGoogle").disabled=!configured;
+  $("gateAuthForms").hidden=false; /* Keep sign-in controls visible; handlers report when auth is not configured. */
   $("gatePreviewArea").hidden=!((LOCAL_PREVIEW||DEMO_PREVIEW_BUILD)&&!session&&!configured);
   if(configured){$("gateSetupMessage").textContent=currentLang==="en"?"Sign-in is enabled. Use your email code or Google account to continue.":"साइन-इन चालू है। आगे बढ़ने के लिए ईमेल कोड या Google अकाउंट इस्तेमाल करें।"}
   else if(LOCAL_PREVIEW||DEMO_PREVIEW_BUILD){$("gateSetupMessage").textContent=currentLang==="en"?"This preview has no Supabase sign-in settings. You can enter demo mode to test local features; no real account is created.":"इस प्रीव्यू में Supabase की साइन-इन सेटिंग नहीं है। लोकल फ़ीचर जाँचने के लिए डेमो में प्रवेश करें; असली अकाउंट नहीं बनेगा।"}
