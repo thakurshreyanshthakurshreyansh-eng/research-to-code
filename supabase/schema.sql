@@ -61,7 +61,7 @@ grant execute on function public.grant_order(text, text) to service_role;
 create table public.ai_usage_events(
   id bigint generated always as identity primary key,
   user_id uuid not null references auth.users(id) on delete cascade,
-  feature text not null check (feature in ('summary','explain','improve','tests')),
+  feature text not null check (feature in ('summary','explain','improve','tests','claims','compatibility','fix')),
   input_chars integer not null check (input_chars between 0 and 22000),
   created_at timestamptz not null default now()
 );
@@ -74,7 +74,7 @@ create function public.consume_ai_quota(p_user uuid, p_feature text, p_limit int
 returns boolean language plpgsql security definer set search_path = public as $$
 declare n integer;
 begin
-  if p_limit < 1 or p_input_chars < 0 or p_input_chars > 22000 or p_feature not in ('summary','explain','improve','tests') then return false; end if;
+  if p_limit < 1 or p_input_chars < 0 or p_input_chars > 22000 or p_feature not in ('summary','explain','improve','tests','claims','compatibility','fix') then return false; end if;
   perform pg_advisory_xact_lock(hashtextextended(p_user::text || date_trunc('month', now())::text, 0));
   select count(*) into n from public.ai_usage_events where user_id=p_user and created_at >= date_trunc('month', now());
   if n >= p_limit then return false; end if;
