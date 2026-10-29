@@ -11,7 +11,9 @@ export const REQUIRED_HEADERS = Object.freeze([
     value: "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https://api.razorpay.com https://checkout.razorpay.com; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://checkout.razorpay.com; worker-src 'self' blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co https://*.workers.dev https://research-to-code-api.onrender.com https://api.razorpay.com https://checkout.razorpay.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; frame-src https://api.razorpay.com https://checkout.razorpay.com; font-src 'self' data:"
   },
   { path: "/*", name: "X-Frame-Options", value: "DENY" },
-  { path: "/*", name: "Referrer-Policy", value: "no-referrer" }
+  { path: "/*", name: "Referrer-Policy", value: "no-referrer" },
+  { path: "/*", name: "X-Content-Type-Options", value: "nosniff" },
+  { path: "/*", name: "Strict-Transport-Security", value: "max-age=31536000" }
 ]);
 
 function unwrapRule(item) {
