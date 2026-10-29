@@ -93,3 +93,25 @@ Do not publicly launch or accept customer money until the deployment checklist i
 - The database schema/auth providers, real AI provider, Razorpay test webhook, and legal/operator placeholders remain unconfigured/unverified.
 - The Render service's health-check path is not configured in the service settings; configure it to `/health` in Render if the plan/settings support it.
 - External live endpoint requests from this environment returned an access error, so no claim is made that the deployed health endpoint, response headers, browser behavior, or Android behavior has been externally verified.
+
+## 29 Oct 2026 — additional deployed verification
+
+**Latest code revision checked:** `dfddd0be96904ebb10f7b0ec0fcfadb8566b1255`.
+
+- Render control plane reports both the API and frontend deployments for this revision as **live**.
+- GitHub Actions on this revision passed the complete test suite and website-bundle checks. The complete suite includes the Node API adapter smoke test; the separate sample pytest suite passed **10/10**.
+- Added a static DOM integrity test. It checks **146 unique HTML IDs** and **207 static lookups**, with no missing references.
+- Added a live deployment smoke workflow that runs on pushes to `main`, on demand, and every six hours. The successful live run checked the frontend's HTTP 200 response, app entry gate, demo mode disabled, theme/PDF/AI-consent controls, API health JSON, and five API security headers.
+- The live smoke check is a focused deployment check, **not** a full real-browser user journey. Android Chrome, real Supabase authentication/schema, AI-provider requests, and Razorpay checkout/webhooks remain unverified.
+
+### Still blocks a claim of “100% working” or public customer launch
+
+1. The API still requires the Supabase anon key and service-role key in Render secret settings; do not paste either secret into chat or commit it to GitHub.
+2. Only after those API secrets are set should the frontend's `API_BASE=https://research-to-code-api.onrender.com` be configured and rebuilt.
+3. Apply `supabase/schema.sql` in Supabase and test real email OTP/Google OAuth, account export/deletion, and session expiry.
+4. AI and payments are disabled by default. AI provider credentials and Razorpay **test-mode** credentials/webhook setup are needed for end-to-end staging tests; no live payments should be enabled yet.
+5. Pro/Ultra entitlements, cross-device history, a hardened server-side Python sandbox, GitHub PR export, automated renewal/cancellation/refund flows, and support workflow are not implemented end-to-end. Keep unavailable tiers disabled.
+6. Complete legal/privacy placeholders and test the real flows on Android Chrome. The Render API health-check path is still blank in service settings; set it to `/health` in the Render dashboard if the service settings permit it.
+
+**Decision remains: NOT READY FOR PUBLIC CUSTOMER LAUNCH.** Automated checks and the current deployment smoke test are green, but they cannot replace the missing credentials, provider integrations, legal details, and real-device testing.
+
