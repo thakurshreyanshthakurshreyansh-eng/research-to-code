@@ -331,8 +331,8 @@ button{min-height:44px}
     <div class="labCard">
       <span class="labTag">04 · ITERATIVE FIX</span>
       <h2>Fix → Retest → Compare</h2>
-      <p class="note">AI मौजूदा code और test failure देखकर suggested fix बनाएगा। फिर Apply & Retest से नया code असल browser pytest runner में चलाएँ और पुराने run से तुलना करें।</p>
-      <button class="btn" id="labFix" data-lab-ai="fix" type="button">Suggest a test-driven fix</button>
+      <p class="note">AI provider configured होने पर यह code और test failure देखकर patch सुझाएगा। Provider बंद होने पर यह local failure diagnosis देगा, code patch नहीं बनाएगा। Apply & Retest के लिए tests जरूरी हैं; suggestion के बाद code/tests बदलने पर नया suggestion लेना होगा।</p>
+      <button class="btn" id="labFix" data-lab-ai="fix" type="button">Diagnose failure / suggest fix</button>
       <button class="btn alt" id="labApplyFix" type="button" style="margin-top:8px" disabled>Apply fix & retest</button>
     </div>
     <div class="labCard labWide">
@@ -636,7 +636,7 @@ else document.querySelectorAll("[data-go]").forEach(function(b){b.onclick=functi
 
 
 /* Research Proof & Compatibility Lab: evidence is separated from AI suggestions. */
-var labBusy=false, labLastFeature="", labLastOutput="";
+var labBusy=false, labLastFeature="", labLastOutput="", labFixContext=null;
 function latestExecutedRun(){
   for(var i=runs.length-1;i>=0;i--)if(runs[i]&&runs[i].ran)return runs[i];
   return null;
@@ -654,6 +654,16 @@ function labEvidence(){
     notice:"A passing test only supports the behavior asserted by that test; it does not independently reproduce a paper's scientific results."
   };
 }
+function labFixContextMatches(){
+  var c=labFixContext;
+  return !!(c&&labLastFeature==="fix"&&$("tests").value.trim()&&
+    $("before").value===c.beforeCode&&$("after").value===c.afterCode&&
+    $("tests").value===c.tests&&!!fencedCode(labLastOutput));
+}
+function clearLabFixContext(){
+  labFixContext=null;
+  var b=$("labApplyFix");if(b)b.disabled=true;
+}
 function refreshLabStatus(){
   var ready=!!(CFG.AI_ENABLED&&CFG.API_BASE&&cfgOk()&&session);
   ["labClaims","labCompat","labFix"].forEach(function(id){var b=$(id);if(b)b.disabled=labBusy});
@@ -661,11 +671,13 @@ function refreshLabStatus(){
   else if(ready&&!labBusy)say("labStatus","AI endpoint configured है। AI चलाने से पहले ऊपर consent checkbox चुनें।");
 }
 function runLocalLabAnalysis(feature){
+  clearLabFixContext();
   var ev=labEvidence(), report={mode:"local-only",generatedAt:new Date().toISOString(),note:"This report inventories evidence; it does not verify scientific truth and does not replace AI review."};
   if(feature==="fix"){
     report.title="Fix → Retest — local failure diagnosis";
     var r=ev.latestRun,log=((r&&r.error)||"")+"\\n"+((r&&r.output)||"");
     var hints=[];
+    if(!ev.tests.trim())hints.push("पहले Proof tab में pytest tests जोड़ें; tests के बिना test-driven patch सुरक्षित रूप से नहीं सुझाया जा सकता।");
     if(!r)hints.push("अभी कोई test run नहीं है: पहले Proof tab में tests चलाएँ ताकि वास्तविक failure मिले।");
     else if(!r.ran)hints.push("Latest run execute नहीं हुआ; browser runner का startup error देखें।");
     else if(r.status==="passed")hints.push("Latest recorded run पास हुआ। नया failure reproduce करें या अतिरिक्त edge-case tests जोड़ें।");
@@ -678,7 +690,9 @@ function runLocalLabAnalysis(feature){
     if(!hints.length)hints.push("Failure log में पहला traceback/error पढ़ें, उसे छोटा reproducible case बनाएं, एक बदलाव करें और पूरा test suite फिर चलाएँ।");
     report.latestRun=r;
     report.diagnosis={status:r?r.status:"not-run",ran:!!(r&&r.ran),codeMatchesCurrent:!!(r&&r.codeMatchesCurrent),testsMatchCurrent:!!(r&&r.testsMatchCurrent),hints:hints,rawError:String((r&&r.error)||"").slice(0,4000),rawOutput:String((r&&r.output)||"").slice(0,8000)};
-    report.nextAction="Local diagnosis cannot safely invent or apply a source-code patch. Configure the AI provider for generated fixes, then review and retest the suggested code.";
+    report.nextAction=ev.tests.trim()
+      ?"Local diagnosis cannot safely invent or apply a source-code patch. Configure the AI provider for generated fixes, then review and retest the suggested code."
+      :"Add pytest tests first. Local diagnosis will not apply a source-code patch; AI-generated fixes also require configured sign-in and provider settings.";
   }else if(feature==="claims"){
     report.title="Claims vs Real Tests — local evidence inventory";
     report.paper={extractedTextAvailable:ev.pdfTextChars>=80,characters:ev.pdfTextChars,claimExtraction:"Not performed locally; AI provider is not configured."};
@@ -696,10 +710,18 @@ function runLocalLabAnalysis(feature){
     report.nextChecks=["Confirm runtime/language versions and pinned dependency versions.","Run the same tests against both versions in the Tests tab.","Review API contracts, environment variables, and side effects.","AI-assisted integration review is unavailable until the backend/provider is configured."];
   }
   labLastFeature=feature;labLastOutput=JSON.stringify(report,null,2);$("labOutput").textContent=labLastOutput;
-  say("labStatus","Local analysis complete. यह static evidence inventory है, AI review या scientific proof नहीं।");
+  if(feature==="fix")say("labStatus",ev.tests.trim()
+    ?"Local failure diagnosis तैयार है; यह code patch नहीं है। AI-generated patch के लिए sign-in और provider configuration चाहिए।"
+    :"Tests missing: पहले pytest tests जोड़ें। कोई code patch apply नहीं किया गया।");
+  else say("labStatus","Local analysis complete. यह static evidence inventory है, AI review या scientific proof नहीं।");
 }
 async function askLabAI(feature){
   if(labBusy)return;
+  clearLabFixContext();
+  if(feature==="fix"&&!$("tests").value.trim()){
+    runLocalLabAnalysis("fix");
+    return;
+  }
   if(!CFG.AI_ENABLED||!CFG.API_BASE||!cfgOk()||!session){runLocalLabAnalysis(feature);return}
   if(!$("labConsent").checked){say("labStatus","पहले AI data-sharing consent चुनें।");return}
   if(!sb||!session||!CFG.API_BASE||!CFG.AI_ENABLED){say("labStatus","AI-powered fix के लिए sign-in और configured backend/provider चाहिए।");return}
@@ -728,10 +750,13 @@ async function askLabAI(feature){
     if(!resp.ok)throw new Error(data.error||"AI request failed.");
     labLastOutput=String(data.output||"No output returned.");
     $("labOutput").textContent=labLastOutput;
+    if(feature==="fix"&&fencedCode(labLastOutput)&&ev.tests.trim()){
+      labFixContext={beforeCode:ev.beforeCode,afterCode:ev.afterCode,tests:ev.tests};
+      $("labApplyFix").disabled=!labFixContextMatches();
+    }else clearLabFixContext();
     say("labStatus","Analysis complete. यह AI analysis है, executed proof नहीं। Usage: "+data.used+" / "+data.limit);
-    $("labApplyFix").disabled=feature!=="fix"||!fencedCode(labLastOutput);
-  }catch(e){say("labStatus",e&&e.message?e.message:"AI request failed.");$("labOutput").textContent="Analysis failed: "+(e&&e.message?e.message:"Unknown error")}
-  finally{labBusy=false;refreshLabStatus();if(feature==="fix"&&fencedCode(labLastOutput))$("labApplyFix").disabled=false}
+  }catch(e){clearLabFixContext();say("labStatus",e&&e.message?e.message:"AI request failed.");$("labOutput").textContent="Analysis failed: "+(e&&e.message?e.message:"Unknown error")}
+  finally{labBusy=false;refreshLabStatus();if(labFixContext)$("labApplyFix").disabled=!labFixContextMatches()}
 }
 document.querySelectorAll("[data-lab-ai]").forEach(function(b){b.addEventListener("click",function(){askLabAI(b.dataset.labAi)})});
 $("labProofPack").onclick=function(){
@@ -743,8 +768,11 @@ $("labCopy").onclick=function(){copyText($("labOutput").textContent,$("labStatus
 $("labDownload").onclick=function(){downloadBlob("research-to-code-lab-report.txt",new Blob([$ ("labOutput").textContent],{type:"text/plain;charset=utf-8"}));say("labStatus","Report download शुरू हुआ।")};
 $("labApplyFix").onclick=function(){
   var c=fencedCode(labLastOutput);
-  if(!c){say("labStatus","Suggested fix में fenced code block नहीं मिला; कुछ भी apply नहीं किया गया।");return}
-  if(!$("tests").value.trim()){say("labStatus","पहले Proof tab में pytest tests जोड़ें; fix apply नहीं किया गया ताकि untested code overwrite न हो।");go("proof");return}
+  if(!$("tests").value.trim()){clearLabFixContext();say("labStatus","पहले Proof tab में pytest tests जोड़ें; fix apply नहीं किया गया ताकि untested code overwrite न हो।");go("proof");return}
+  if(!c||labLastFeature!=="fix"||!labFixContext){clearLabFixContext();say("labStatus","कोई ताज़ा AI fix उपलब्ध नहीं है। पहले Fix suggestion चलाएँ; local diagnosis अपने-आप patch नहीं बनाता।");return}
+  if(!labFixContextMatches()){clearLabFixContext();say("labStatus","Fix suggestion पुरानी हो गई: code या tests बदले हैं। सुरक्षित रहने के लिए नया suggestion लें।");return}
+  if(c.length>100000){clearLabFixContext();say("labStatus","Suggested code 100 KB से बड़ा है; कुछ भी apply नहीं किया गया।");return}
+  clearLabFixContext();
   $("after").value=c;target="after";
   document.querySelectorAll("#tseg button").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.t==="after"))});
   refreshProof();scheduleSave();go("proof");
@@ -945,6 +973,7 @@ function workerMain(){
 }
 function curCode(){return $(target).value}
 function refreshProof(){
+  if(labFixContext)$("labApplyFix").disabled=!labFixContextMatches();
   var last=runs.filter(function(r){return r.ran}).pop(),el=$("tState");
   if(!last)el.innerHTML='<span class="chip c-sug">Not run yet</span>';
   else if(last.code===curCode()&&last.tests===$("tests").value)el.innerHTML='<span class="chip c-ok">Last run used exactly this code and these tests</span>';
