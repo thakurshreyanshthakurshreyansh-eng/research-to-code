@@ -28,6 +28,14 @@ async function get(url, label) {
 }
 
 const frontend = await get(frontendUrl, "Frontend");
+const frontendSecurityHeaders = [
+  "content-security-policy",
+  "x-content-type-options",
+  "x-frame-options",
+  "referrer-policy",
+  "strict-transport-security"
+];
+console.log("Frontend response security headers: " + JSON.stringify(Object.fromEntries(frontendSecurityHeaders.map(name => [name, frontend.headers.get(name)]))));
 const html = await frontend.text();
 assert.ok(html.toLowerCase().includes("<html"), "Frontend should serve HTML");
 assert.match(html, /Research to Code/i, "Expected app title/brand missing");
