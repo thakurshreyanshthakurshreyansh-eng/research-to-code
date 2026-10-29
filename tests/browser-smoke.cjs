@@ -132,6 +132,24 @@ function makePdf(text) {
       await page.waitForFunction(() => document.querySelector("#saveBadge").textContent.length > 0);
       assert.ok(await page.locator("#saveBadge").innerText(), viewport.name + ": save status should be shown");
 
+      // Confirm the offline shell is actually controlled and can reopen without a network.
+      if (viewport.name === "mobile") {
+        const serviceWorkerReady = await page.evaluate(async () => {
+          if (!("serviceWorker" in navigator)) return false;
+          const registration = await navigator.serviceWorker.ready;
+          return !!registration.active;
+        });
+        assert.ok(serviceWorkerReady, "mobile: service worker should install and activate");
+        await page.reload({ waitUntil: "domcontentloaded" });
+        await page.waitForFunction(() => !!navigator.serviceWorker.controller);
+        await context.setOffline(true);
+        const offlineResponse = await page.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+        assert.equal(offlineResponse.status(), 200, "mobile: offline app shell should reopen");
+        assert.match(await page.title(), /Research to Code/, "mobile: offline shell should render the app");
+        await context.setOffline(false);
+        console.log("PASS mobile: service worker offline app shell");
+      }
+
       if (failures.length) throw new Error(failures.join("\n"));
       console.log("PASS " + viewport.name + ": entry gate, theme, language, navigation, diff, example, export, invalid PDF validation, draft status");
       await context.close();
