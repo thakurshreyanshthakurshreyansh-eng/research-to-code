@@ -43,6 +43,19 @@ const { chromium } = require("playwright");
       await page.locator("#cmp").click();
       await page.locator("#resBody").waitFor({ state: "visible" });
 
+      // Exercise the real browser Python/pytest worker once per run, not just its UI.
+      if (viewport.name === "mobile") {
+        await page.locator('#nav button[data-t="proof"]').click();
+        await page.locator("#run").click();
+        await page.waitForFunction(() => {
+          const text = document.querySelector("#runs")?.innerText || "";
+          return text.includes("Passed") || text.includes("Did not run") || text.includes("Failed");
+        }, { timeout: 120000 });
+        const runReport = await page.locator("#runs").innerText();
+        assert.match(runReport, /Passed/i, "browser Python/pytest should execute and pass the supplied example tests; report: " + runReport.slice(0, 1800));
+        assert.match(runReport, /5 passed/i, "browser pytest should report five executed passing tests; report: " + runReport.slice(0, 1800));
+      }
+
       // Export is a real browser download, not just a click handler.
       const downloadPromise = page.waitForEvent("download");
       await page.locator("#exportWorkspace").click();
