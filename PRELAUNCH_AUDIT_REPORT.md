@@ -3,7 +3,7 @@
 **Audit date:** 29 October 2026  
 **Decision:** **NOT READY FOR PUBLIC CUSTOMER LAUNCH**  
 **Live frontend:** https://research-to-code.onrender.com  
-**Latest source revision:** `a00a2294819cc6813b73122f17ad6f672f2bbf7f` (adds a meta Content-Security-Policy fallback and its static-audit assertion).
+**Source revision re-verified:** `de27ef14ed11283364bfddab29eab554f133e11a` (fixes the CSP URL-host test and verifies the configured API-origin allowlist).
 
 ## Changes made in this audit
 
@@ -27,7 +27,7 @@
 
 ## Local test results
 
-- `node tests/run-all.cjs`: all groups pass — 217 harness checks across logic, page flow, account/payment UI, example Python, cross-file integration, simulated Worker/database/payment/AI, static security audit and sample challenge.
+- `node tests/run-all.cjs`: **224 checks passed** across logic, page flow, account/payment UI, example Python, cross-file integration, simulated Worker/database/payment/AI, static security audit and sample challenge. GitHub Actions passed this suite on source revision `de27ef14ed11283364bfddab29eab554f133e11a`.
 - `python -m pytest -q samples/ewma-anomaly-detection/test_solution.py`: **10 passed**.
 - The deliberately buggy sample is expected to fail 5 tests and pass 5, proving that the sample tests detect the seeded faults.
 - Inline application JavaScript syntax check: passed.
@@ -59,10 +59,11 @@ Do not publicly launch or accept customer money until the deployment checklist i
 - First-tap theme behavior fixed for system dark mode; global CSS override disables transitions, animations, backdrop blur and shadows to reduce rendering work on low-end phones. This is a performance-oriented change, not a measured “8K” benchmark.
 - Preview gate now shows a clearly labeled demo route when backend configuration is empty, even in hosted preview viewers. Demo does not create an account and leaves AI/payments disabled. `DEMO_PREVIEW_BUILD` must be false before public deployment.
 - Proposed prices: Pro ₹599/month; Ultra ₹1,299/month. Calculation and assumptions are in `PRICING_MODEL_HI.md`. Checkout remains disabled because live auth, AI provider, tier-specific quota logic and payment lifecycle have not been end-to-end tested.
-- Previous local suite: 224 harness checks passed; sample pytest suite: 10 passed. A new static-audit assertion now covers the meta CSP fallback, but a fresh complete local suite was not executed in this environment. Android Chrome and real services remain unverified.
+- Previous local suite: 224 harness checks passed; sample pytest suite: 10 passed. The meta CSP fallback is covered by the static audit. The fresh GitHub Actions run passed both `node tests/run-all.cjs` and `python -m pytest -q samples/ewma-anomaly-detection/test_solution.py` (10 passed). This still does not replace live-browser or real-provider integration tests. Android Chrome and real services remain unverified.
 
 
 ## 29 Oct 2026 — live deployment and hosting-header follow-up
-- Render build logs report the CSP fallback build completed and the site was live for commit `b59289f930ce72dd0ade48dbb42be46c539c43bb`; a subsequent deploy for `a00a2294819cc6813b73122f17ad6f672f2bbf7f` was still running at the last status check.
-- Added a meta CSP fallback in `index.html` because Render does not consume Cloudflare Pages' `_headers` file. The fallback was checked against the intended allowed host patterns. It is not a substitute for response headers or a real browser network/console test.
+- Render's latest confirmed live deployment at the time of this audit was commit `09a6ddc1d727661ed2181ff5420b463bec0a8298`. A newer commit `de27ef14ed11283364bfddab29eab554f133e11a` had been queued for deployment; verify the final Render deployment status before assuming that revision is live.
+- Added a meta CSP fallback in `index.html` because Render does not consume Cloudflare Pages' `_headers` file. The fallback is covered by static checks. It is not a substitute for response headers or a real browser network/console test.
+- Fixed the test harness's URL-host parser to handle CSP separators and explicitly configured Supabase/Worker origins; both GitHub Actions workflows passed the 224-check suite and the separate 10-test pytest suite on revision `de27ef14ed11283364bfddab29eab554f133e11a`.
 - Updated README and SETUP to explicitly warn about Render response-header configuration. Public launch remains blocked pending Supabase SQL/Auth, separate API Worker deployment, real end-to-end tests, completed legal/support details and owner-controlled configuration.
