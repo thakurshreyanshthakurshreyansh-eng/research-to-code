@@ -16,6 +16,8 @@ globalThis.fetch=async(url,init={})=>{const u=new URL(url),h=init.headers||{},R=
  if(m==="POST"){const b=JSON.parse(init.body);if(p==="webhook_events"&&tb.find(r=>r.id===b.id))return R([]);tb.push({status:"created",created_at:new Date().toISOString(),...b});return R([b])}
  if(m==="DELETE"){const hit=tb.filter(r=>match(r,u.searchParams));hit.forEach(r=>tb.splice(tb.indexOf(r),1));return R(hit)}};
 const call=(path,o={})=>W.default.fetch(new Request("https://api.example"+path,{method:"POST",headers:{"content-type":"application/json",...(o.tok?{authorization:"Bearer "+o.tok}:{}),...o.h},body:o.raw??JSON.stringify(o.body||{})}),{...env,...o.env});
+const health=()=>W.default.fetch(new Request("https://api.example/health",{method:"GET",headers:{origin:env.ALLOWED_ORIGIN}}),env);
+await t("public health endpoint confirms liveness without exposing configuration",async()=>{const r=await health(),j=await r.json();assert.equal(r.status,200);assert.deepEqual(j,{status:"ok",service:"research-to-code-api"});assert.equal(r.headers.get("access-control-allow-origin"),env.ALLOWED_ORIGIN);assert.equal(JSON.stringify(j).includes("SECRET"),false)});
 const mk=async(tok="tokA",plan="p30")=>(await(await call("/api/orders",{tok,body:{plan_id:plan,amount:1}})).json());
 const PAY=(o,p,v={})=>{T.payments[p]={id:p,order_id:o,amount:9900,currency:"INR",status:"captured",amount_refunded:0,...v}};const vsig=(o,p)=>{PAY(o,p);return W.hmac(env.RAZORPAY_KEY_SECRET,o+"|"+p)};
 const hook=async(ev,id)=>{const raw=JSON.stringify(ev);return call("/api/webhook",{raw,h:{"x-razorpay-signature":await W.hmac(env.RAZORPAY_WEBHOOK_SECRET,raw),"x-razorpay-event-id":id}})};
