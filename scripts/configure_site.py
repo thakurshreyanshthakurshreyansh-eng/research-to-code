@@ -25,8 +25,8 @@ if not (key.startswith("sb_publishable_") or key.startswith("eyJ")):
 
 if api_base:
     api = urlparse(api_base)
-    if api.scheme != "https" or not api.hostname or not api.hostname.endswith(".workers.dev") or api.path not in ("", "/") or api.query or api.fragment:
-        raise SystemExit("Build blocked: API_BASE must be a Cloudflare Workers HTTPS origin with no path/query.")
+    if api.scheme != "https" or not api.hostname or not (api.hostname.endswith(".workers.dev") or api.hostname == "research-to-code-api.onrender.com") or api.path not in ("", "/") or api.query or api.fragment:
+        raise SystemExit("Build blocked: API_BASE must be the configured Render API or a Cloudflare Workers HTTPS origin with no path/query.")
 if razorpay_key_id and not razorpay_key_id.startswith("rzp_test_"):
     raise SystemExit("Build blocked: only a Razorpay TEST key ID is accepted by this build.")
 
