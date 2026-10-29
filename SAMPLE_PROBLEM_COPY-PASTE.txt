@@ -1,0 +1,12 @@
+Research-to-Code — sample challenge
+
+Task: Implement an exponentially weighted moving average (EWMA) anomaly detector.
+
+Requirements:
+1. Accept a sequence of numeric values and a smoothing factor alpha where 0 < alpha <= 1.
+2. Initialize the EWMA from the first value.
+3. For each later value x, calculate ewma = alpha * x + (1 - alpha) * previous_ewma.
+4. Flag a value when its absolute distance from the current EWMA exceeds the configured threshold.
+5. Handle empty input and invalid alpha values clearly.
+
+Try the sample files in samples/ewma-anomaly-detection/.
