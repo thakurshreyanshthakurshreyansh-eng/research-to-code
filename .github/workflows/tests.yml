@@ -29,3 +29,5 @@ jobs:
         run: python -m pip install --disable-pip-version-check pytest
       - name: Run full test suite (fail on any failure)
         run: node tests/run-all.cjs
+      - name: Run sample pytest suite
+        run: python -m pytest -q samples/ewma-anomaly-detection/test_solution.py
