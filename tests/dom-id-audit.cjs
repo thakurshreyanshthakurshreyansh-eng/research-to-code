@@ -12,4 +12,4 @@ const refs = [
 ];
 const missing = [...new Set(refs.filter(id => !idSet.has(id)))];
 assert.deepEqual(missing, [], "DOM lookups reference missing static IDs: " + missing.join(", "));
-console.log(\`PASS DOM ID audit: \${ids.length} unique IDs, \${refs.length} static lookups, no missing references\`);
+console.log("PASS DOM ID audit: " + ids.length + " unique IDs, " + refs.length + " static lookups, no missing references");
