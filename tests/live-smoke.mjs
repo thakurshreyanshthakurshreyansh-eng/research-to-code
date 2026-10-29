@@ -29,7 +29,7 @@ async function get(url, label) {
 
 const frontend = await get(frontendUrl, "Frontend");
 const html = await frontend.text();
-assert.match(html, /<html\\b/i, "Frontend should serve HTML");
+assert.ok(html.toLowerCase().includes("<html"), "Frontend should serve HTML");
 assert.match(html, /Research to Code/i, "Expected app title/brand missing");
 assert.match(html, /id="gateScreen"/, "Login/entry gate missing from deployed bundle");
 assert.match(html, /DEMO_PREVIEW_BUILD=false/, "Deployed bundle must not enable preview/demo access");
