@@ -656,14 +656,36 @@ function labEvidence(){
 }
 function refreshLabStatus(){
   var ready=!!(CFG.AI_ENABLED&&CFG.API_BASE&&cfgOk()&&session);
-  ["labClaims","labCompat","labFix"].forEach(function(id){var b=$(id);if(b)b.disabled=!ready||labBusy});
-  if(!ready&&!labBusy)say("labStatus","AI analysis अभी उपलब्ध नहीं: sign-in, API और AI provider configuration की जरूरत है। Proof Pack और ZIP export local mode में काम कर सकते हैं।");
+  ["labClaims","labCompat","labFix"].forEach(function(id){var b=$(id);if(b)b.disabled=labBusy||(id==="labFix"&&!ready)});
+  if(!ready&&!labBusy)say("labStatus","Local claim-evidence और compatibility checks उपलब्ध हैं। AI-powered fix के लिए sign-in, API और AI provider configuration चाहिए।");
   else if(ready&&!labBusy)say("labStatus","AI endpoint configured है। AI चलाने से पहले ऊपर consent checkbox चुनें।");
+}
+function runLocalLabAnalysis(feature){
+  var ev=labEvidence(), report={mode:"local-only",generatedAt:new Date().toISOString(),note:"This report inventories evidence; it does not verify scientific truth and does not replace AI review."};
+  if(feature==="claims"){
+    report.title="Claims vs Real Tests — local evidence inventory";
+    report.paper={extractedTextAvailable:ev.pdfTextChars>=80,characters:ev.pdfTextChars,claimExtraction:"Not performed locally; AI provider is not configured."};
+    report.code={beforePresent:ev.beforeCode.trim().length>0,afterPresent:ev.afterCode.trim().length>0};
+    report.tests={present:ev.tests.trim().length>0,characters:ev.tests.length,executedAgainstCurrentCode:!!(ev.latestRun&&ev.latestRun.ran&&ev.latestRun.codeMatchesCurrent&&ev.latestRun.testsMatchCurrent)};
+    report.latestRun=ev.latestRun;
+    report.verdict="No scientific claim is marked verified by this local-only report. Run tests and use configured AI analysis for a deeper evidence audit.";
+  }else{
+    var imports=function(code){return (code.match(/^\s*(?:from\s+([\w.]+)\s+import|import\s+([\w., ]+))/gm)||[]).map(function(line){var m=/^\s*from\s+([\w.]+)\s+import|^\s*import\s+([\w., ]+)/.exec(line);return (m[1]||m[2]||"").split(",").map(function(v){return v.trim().split(/\s+as\s+/)[0].split(".")[0]}).filter(Boolean)}).reduce(function(a,b){return a.concat(b)},[]).filter(function(v,i,a){return a.indexOf(v)===i}).sort()};
+    var a=imports(ev.beforeCode),b=imports(ev.afterCode),all=Array.from(new Set(a.concat(b))).sort();
+    report.title="GPT–Claude Compatibility — local static comparison";
+    report.versions={before:{characters:ev.beforeCode.length,lines:ev.beforeCode?ev.beforeCode.split("\n").length:0,imports:a},after:{characters:ev.afterCode.length,lines:ev.afterCode?ev.afterCode.split("\n").length:0,imports:b}};
+    report.imports={onlyBefore:a.filter(function(v){return !b.includes(v)}),onlyAfter:b.filter(function(v){return !a.includes(v)}),combined:all};
+    report.tests={present:ev.tests.trim().length>0,latestRun:ev.latestRun};
+    report.nextChecks=["Confirm runtime/language versions and pinned dependency versions.","Run the same tests against both versions in the Tests tab.","Review API contracts, environment variables, and side effects.","AI-assisted integration review is unavailable until the backend/provider is configured."];
+  }
+  labLastFeature=feature;labLastOutput=JSON.stringify(report,null,2);$("labOutput").textContent=labLastOutput;
+  say("labStatus","Local analysis complete. यह static evidence inventory है, AI review या scientific proof नहीं।");
 }
 async function askLabAI(feature){
   if(labBusy)return;
+  if(feature!=="fix"&&(!CFG.AI_ENABLED||!CFG.API_BASE||!cfgOk()||!session)){runLocalLabAnalysis(feature);return}
   if(!$("labConsent").checked){say("labStatus","पहले AI data-sharing consent चुनें।");return}
-  if(!sb||!session||!CFG.API_BASE||!CFG.AI_ENABLED){say("labStatus","AI के लिए sign-in और configured backend/provider चाहिए।");return}
+  if(!sb||!session||!CFG.API_BASE||!CFG.AI_ENABLED){say("labStatus","AI-powered fix के लिए sign-in और configured backend/provider चाहिए।");return}
   var ev=labEvidence(), text="", code="", tests="";
   if(feature==="claims"){
     if(ev.pdfExcerpt.trim().length<80){say("labStatus","पहले PDF पढ़ें या OCR चलाएँ; claim audit के लिए paper text चाहिए।");return}
