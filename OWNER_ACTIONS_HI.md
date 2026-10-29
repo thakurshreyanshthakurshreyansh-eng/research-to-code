@@ -24,3 +24,20 @@ Public paid launch तब तक नहीं: जब तक सभी वास
 
 ## सुरक्षा
 कोई password, OTP, GitHub token, AI secret, Razorpay secret, database password या Supabase service-role key चैट में न भेजें. इन्हें केवल संबंधित provider के secret settings में डालें.
+
+## नवीन लाइव जाँच से मिला अतिरिक्त आवश्यक काम
+
+GitHub Actions ने वास्तविक Render frontend response पर ये headers पाए:
+- मौजूद: `X-Content-Type-Options: nosniff`, `Strict-Transport-Security`
+- **नहीं मिले:** `Content-Security-Policy` response header, `X-Frame-Options`, `Referrer-Policy`
+
+HTML meta CSP/referrer fallback मौजूद है, लेकिन meta CSP clickjacking के लिए `frame-ancestors` लागू नहीं कर सकती। इसे केवल कोड में जोड़ना पर्याप्त नहीं है। Render Dashboard में Static Site `research-to-code` → **Settings → Headers** में path `/*` के लिए ये rules जोड़ें:
+
+1. `Content-Security-Policy` — मौजूदा `index.html` meta CSP की directives को response header में कॉपी करें और `frame-ancestors 'none'` जोड़ें। मौजूदा inline scripts, Pyodide/WASM, PDF.js, Supabase और Razorpay allowlist बनाए रखें; CSP बदलने के बाद browser tests दोबारा चलाएँ।
+2. `X-Frame-Options` = `DENY`
+3. `Referrer-Policy` = `no-referrer`
+4. `X-Content-Type-Options` = `nosniff` (पहले से मौजूद है; duplicate rule न बनाएँ)
+5. HSTS पहले से मौजूद है; दूसरा conflicting rule न जोड़ें।
+
+नया live smoke test अब CSP, X-Frame-Options और Referrer-Policy response headers की अनुपस्थिति पर fail होगा, ताकि इसे गलती से launch-ready न माना जाए। Render dashboard header rules इस integration से सीधे बदलने का tool उपलब्ध नहीं है, इसलिए ये तीन rules dashboard में सेट करना अनिवार्य है। उसके बाद नया live smoke run पास होना चाहिए।
+
