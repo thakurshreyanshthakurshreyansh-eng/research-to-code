@@ -38,7 +38,13 @@ const server = createServer(async (incoming, outgoing) => {
     if (method !== "GET" && method !== "HEAD" && size > 0) init.body = Buffer.concat(chunks);
     const request = new Request("http://render-internal" + (incoming.url || "/"), init);
     const response = await worker.fetch(request, env);
-    const responseHeaders = {};
+    const responseHeaders = {
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "content-security-policy": "default-src 'none'; frame-ancestors 'none'",
+      "referrer-policy": "no-referrer",
+      "strict-transport-security": "max-age=31536000"
+    };
     response.headers.forEach((value, key) => { responseHeaders[key] = value; });
     outgoing.writeHead(response.status, responseHeaders);
     outgoing.end(Buffer.from(await response.arrayBuffer()));
