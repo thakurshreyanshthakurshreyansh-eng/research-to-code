@@ -1,5 +1,5 @@
 const fs=require('fs'),path=require('path');const R=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
-const idx=R('index.html'),wk=R('worker/worker.js'),sql=R('supabase/schema.sql'),setup=R('SETUP.md'),hdr=R('_headers');
+const idx=R('index.html'),wk=R('worker/worker.js'),sql=R('supabase/schema.sql'),setup=R('SETUP.md'),hdr=R('_headers'),cfg=R('scripts/configure_site.py');
 let pass=0,fail=0;const ok=(n,c)=>{if(c){pass++;console.log('PASS',n)}else{fail++;console.log('FAIL',n)}};const uniq=a=>[...new Set(a)];
 const envNames=uniq([...wk.matchAll(/env\.([A-Z_]+)/g)].map(m=>m[1]));
 ok('Worker uses '+envNames.length+' settings, all documented in SETUP.md',envNames.length>=8&&envNames.every(n=>setup.includes(n)));
