@@ -1,0 +1,52 @@
+name: Import and verify website bundle
+
+on:
+  push:
+    branches: [zip-import-staging]
+    paths:
+      - '.incoming/parts/**'
+      - '.github/workflows/import-zip.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@v4
+        with:
+          ref: zip-import-staging
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reassemble bundle safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -d .incoming/parts
+          cat .incoming/parts/part*.txt > /tmp/website-bundle.xz.b64
+          base64 --decode /tmp/website-bundle.xz.b64 > /tmp/website-bundle.tar.xz
+          mkdir -p /tmp/imported
+          tar -xJf /tmp/website-bundle.tar.xz -C /tmp/imported
+          SOURCE=/tmp/imported/Research-to-Code-GITHUB-READY
+          test -s "$SOURCE/index.html"
+          test -s "$SOURCE/worker/worker.js"
+          rsync -a --exclude='.pytest_cache' --exclude='__pycache__' --exclude='.DS_Store' "$SOURCE"/ ./
+          rm -rf .incoming
+      - name: Run full local test suite in CI
+        run: node tests/run-all.cjs
+      - name: Commit imported website only after tests pass
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'; exit 0
+          fi
+          git commit -m 'Import and verify complete website bundle'
+          git push origin HEAD:zip-import-staging
