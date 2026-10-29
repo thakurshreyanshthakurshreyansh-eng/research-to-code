@@ -2,6 +2,29 @@
 const assert = require("node:assert/strict");
 const { chromium } = require("playwright");
 
+function makePdf(text) {
+  const escaped = text.replace(/\\/g, "\\\\").replace(/\\(/g, "\\(").replace(/\\)/g, "\\)");
+  const stream = "BT /F1 12 Tf 72 720 Td (" + escaped + ") Tj ET\n";
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    "<< /Length " + Buffer.byteLength(stream, "ascii") + " >>\nstream\n" + stream + "endstream"
+  ];
+  let pdf = "%PDF-1.4\n";
+  const offsets = [0];
+  for (let i = 0; i < objects.length; i++) {
+    offsets.push(Buffer.byteLength(pdf, "ascii"));
+    pdf += (i + 1) + " 0 obj\n" + objects[i] + "\nendobj\n";
+  }
+  const xref = Buffer.byteLength(pdf, "ascii");
+  pdf += "xref\n0 " + (objects.length + 1) + "\n0000000000 65535 f \n";
+  for (const offset of offsets.slice(1)) pdf += String(offset).padStart(10, "0") + " 00000 n \n";
+  pdf += "trailer\n<< /Size " + (objects.length + 1) + " /Root 1 0 R >>\nstartxref\n" + xref + "\n%%EOF\n";
+  return Buffer.from(pdf, "ascii");
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const failures = [];
@@ -64,6 +87,18 @@ const { chromium } = require("playwright");
       await page.locator("#exportWorkspace").click();
       const download = await downloadPromise;
       assert.equal(download.suggestedFilename(), "research-to-code-workspace.json", viewport.name + ": workspace export filename");
+
+      // A small real PDF must extract text in the browser, not just reject bad files.
+      await page.locator('#nav button[data-t="paper"]').click();
+      const samplePdfText = "Research to Code sample paper describes a method. Algorithm 1 and Equation 1 are included for extraction testing.";
+      await page.locator("#pdf").setInputFiles({
+        name: "sample.pdf",
+        mimeType: "application/pdf",
+        buffer: makePdf(samplePdfText)
+      });
+      await page.waitForFunction(() => !document.querySelector("#pdfOut").hidden, { timeout: 45000 });
+      assert.ok((await page.locator("#prev").textContent()).includes("Research to Code sample paper"), viewport.name + ": PDF text should be extracted");
+      console.log("PASS " + viewport.name + ": valid PDF text extraction");
 
       // Invalid PDF must fail clearly before loading external libraries.
       await page.locator('#nav button[data-t="paper"]').click();
