@@ -39,6 +39,7 @@ Note: Supabase's built-in email sender is limited and meant for testing. Real us
 
 ### Render static-site build configuration (recommended)
 - Keep `index.html` committed with blank client settings; do not commit project credentials to the public repository.
+- Render-specific security note: Render Static Sites do **not** automatically apply Cloudflare Pages' `_headers` file. The main app now includes a meta CSP as a fallback, but meta CSP cannot enforce every response-header control (for example `frame-ancestors`). In Render > Settings > Headers, add the equivalent response security headers where supported and verify them in the deployed response before public launch.
 - In Render > the `research-to-code` static site > Environment, set `SUPABASE_URL` and `SUPABASE_ANON_KEY` to the Supabase project URL and publishable key. These are public client settings; never add a database password, `sb_secret_`, or `service_role` key.
 - In Render > Settings > Build Command, set `python3 scripts/configure_site.py`. Keep Publish Directory as `.`. The build script injects the client settings only into Render's temporary build copy and disables hosted demo entry. It deliberately leaves AI and payments off.
 - Save changes and deploy. If the build fails, read the build log; the script intentionally blocks missing or unsafe values.
