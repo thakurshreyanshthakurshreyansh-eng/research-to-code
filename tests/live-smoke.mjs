@@ -21,7 +21,7 @@ assert.match(html, /Research to Code/i, "Expected app title/brand missing");
 assert.match(html, /id="gateScreen"/, "Login/entry gate missing from deployed bundle");
 assert.match(html, /DEMO_PREVIEW_BUILD=false/, "Deployed bundle must not enable preview/demo access");
 assert.match(html, /id="themeToggle"/, "Theme control missing from deployed bundle");
-assert.match(html, /id="pdfFile"/, "PDF upload control missing from deployed bundle");
+assert.match(html, /id="pdf"/, "PDF upload control missing from deployed bundle");
 assert.match(html, /id="aiConsent"/, "AI consent control missing from deployed bundle");
 
 const api = await get(apiHealthUrl, "API health endpoint");
