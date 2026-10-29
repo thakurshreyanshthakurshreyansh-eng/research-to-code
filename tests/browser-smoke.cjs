@@ -30,6 +30,7 @@ function makePdf(text) {
   const failures = [];
   try {
     for (const viewport of [
+      { width: 360, height: 800, name: "small-mobile" },
       { width: 390, height: 844, name: "mobile" },
       { width: 1280, height: 900, name: "desktop" }
     ]) {
@@ -67,6 +68,7 @@ function makePdf(text) {
       await page.locator("#after").fill("def add(a, b):\n    return a + b\n");
       await page.locator("#cmp").click();
       await page.locator("#resBody").waitFor({ state: "visible" });
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 2), viewport.name + ": compare view should not overflow horizontally");
       const diffState = await page.evaluate(() => ({ before: document.querySelector("#before").value, after: document.querySelector("#after").value, added: document.querySelector("#nAdd").textContent, removed: document.querySelector("#nDel").textContent, modified: document.querySelector("#nMod").textContent, output: document.querySelector("#cmpBox").textContent, children: document.querySelector("#cmpBox").children.length }));
       assert.ok(Number(diffState.added) + Number(diffState.removed) + Number(diffState.modified) > 0 && diffState.children > 0, viewport.name + ": diff output should not be empty: " + JSON.stringify(diffState));
       await page.locator('#nav button[data-t="code"]').click();
@@ -114,6 +116,7 @@ function makePdf(text) {
 
       // A small real PDF must extract text in the browser, not just reject bad files.
       await page.locator('#nav button[data-t="paper"]').click();
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 2), viewport.name + ": PDF view should not overflow horizontally");
       const samplePdfText = "Research to Code sample paper describes a method. Algorithm 1 and Equation 1 are included for extraction testing.";
       await page.locator("#pdf").setInputFiles({
         name: "sample.pdf",
