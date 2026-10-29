@@ -1,6 +1,53 @@
-Review notes
+Research to Code Stage 2 — ChatGPT review notes
 
-- The repository upload is incomplete until the original index.html and all remaining source/archive files are present.
-- Some files added during setup may be reconstructed rather than byte-for-byte copies of the original ZIP.
-- Verify the complete ZIP inventory against the GitHub tree before deployment.
-- Do not deploy until source completeness and application tests are confirmed.
+What I checked
+- Inspected the supplied ZIP and its HTML, Cloudflare Worker, Supabase SQL, setup instructions, headers, and test suite.
+- Ran Node v22 syntax validation for worker/worker.js.
+- Ran node tests/run-all.cjs: all groups pass after the review fix:
+  logic 16; page flow 19; sign-in/payment screens 25; example Python 5; cross-file integration 25; Worker simulated database/Razorpay 38.
+- These are local tests. They do NOT prove live Supabase, Google OAuth, email OTP, Razorpay, deployment, or Android browser behavior.
+
+Change made
+- Updated worker/worker.js so a payment.captured or order.paid webhook is not acknowledged if Razorpay's API still reports the payment as pending. It returns an error so the webhook event can be retried, rather than silently consuming the event and potentially leaving a paid customer without an entitlement.
+- Added a regression test in tests/worker.test.mjs for this delayed-status case.
+
+Important limitations / next steps
+1. Do not enable payments yet. Premium features are not implemented and no real merchant/service setup has been verified.
+2. Deploy and test only after configuring Supabase, Google OAuth, and Cloudflare secrets in their own dashboards. Never put service-role, Razorpay secret, or webhook secret in index.html, GitHub, or chat.
+3. Real SMTP may cost money; do not subscribe without checking price and asking first.
+4. _headers still does not include a Content-Security-Policy. Adding a strict policy needs careful testing because this page uses inline JS, CDN scripts, a Blob Worker, and Pyodide/WASM. Do not treat current headers as a complete CSP defense.
+5. Proof Mode runs untrusted user code in browser-based Pyodide/Worker. Do not treat it as a hardened security sandbox.
+6. Supabase SQL was reviewed statically but not executed against a real Supabase/Postgres project.
+7. The test suite uses a simulated database and simulated Razorpay API; passing tests do not mean external services are live.
+
+Status: reviewed prototype, not production-ready; no public URL/deployment created.
+
+Additional TEST-mode hardening
+- Worker now requires PAYMENT_MODE=test, a Razorpay key ID beginning rzp_test_, and both Razorpay secrets before creating orders, verifying payments, or accepting webhooks.
+- Added regression tests proving a live-looking rzp_live_ key and a missing TEST mode setting cannot create an order.
+- schema.sql now inserts an explicitly labelled ₹1 Premium Test plan (30 days) for Razorpay TEST mode only.
+- SETUP.md explains how to configure TEST keys and explicitly forbids live payments in this build.
+- This still does not make live Razorpay calls from this environment: credentials and external account setup are not available. Premium AI features are not implemented.
+
+AI feature implementation (provider remains OFF until configured)
+- Added AI Lab UI for paper summaries, methods/equation explanations, code review/improvement, and pytest generation.
+- Added Worker /api/ai using a configurable OpenAI-compatible endpoint; provider key stays server-side.
+- Added monthly quotas (Free 3 requests, Premium 50) backed by an atomic Supabase RPC; usage metadata only, no input/output history table.
+- Added explicit consent before selected text/code is sent to provider. The original PDF file is not uploaded by AI Lab.
+- Added browser-local OCR for up to 5 PDF pages using Tesseract.js; OCR may be inaccurate and downloads a CDN library.
+- NOT implemented: saved cross-device history, server-side code sandbox, GitHub PR export, subscription auto-renewal/cancellation/refund automation, complete legal policies/support workflows, production CSP. These need separate design and tests.
+- AI provider not selected and no API key configured. Do not enable AI until cost/privacy terms are reviewed.
+
+
+Prelaunch security pass (29 Oct 2026)
+- Added server-side rejection of mismatched Origin headers for browser API endpoints (server-to-server requests without Origin remain allowed).
+- Added a 64 KiB maximum payload for Razorpay webhooks, including a byte-size check after reading.
+- Pinned the Tesseract.js CDN URL to 5.1.1, clear stale PDF/OCR state when selecting a new PDF, and terminate OCR workers on error.
+- Added regression tests for wrong/allowed Origin and oversized webhook payloads.
+- A real Chromium UI smoke test was attempted in desktop and narrow mobile viewports but could not navigate to localhost or file URLs because the environment returned ERR_BLOCKED_BY_ADMINISTRATOR. Therefore UI rendering, responsive overflow, real PDF/OCR, and Pyodide behavior remain unverified here.
+- Still not production-ready: no live Supabase/OAuth/AI/Razorpay tests, no CSP, legal drafts still contain placeholders, and no deployed site or real Android device test.
+
+- AI endpoint now rejects requests without an explicit `consent: true` flag and enforces a combined 22,000-character input ceiling to match the database ledger constraint.
+- Regression tests cover missing consent and combined-input overflow. Latest suite: 154 checks across six groups; all pass locally.
+- Static HTML audit: no duplicate element IDs, no missing local file references, no unlabelled form controls found in the checked pages. This is not a full accessibility audit.
+- Hosting instructions now clarify that `_headers` is ignored by GitHub Pages and that policy placeholders must be completed before public launch.

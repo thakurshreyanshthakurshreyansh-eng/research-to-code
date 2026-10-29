@@ -1,0 +1,1 @@
+Bundle import is staged. The import workflow extracted the full website and most test groups pass; one optional pytest-dependent sample challenge test fails in CI because pytest is not installed. This marker exists to retrigger import after workflow repair.

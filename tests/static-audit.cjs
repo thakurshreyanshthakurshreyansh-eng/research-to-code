@@ -1,8 +1,46 @@
-const fs = require("node:fs");
-const required = ["index.html", "privacy.html", "terms.html", "manifest.webmanifest"];
-const missing = required.filter(file => !fs.existsSync(file));
-if (missing.length) {
-  console.error("Missing files:", missing.join(", "));
-  process.exit(1);
-}
-console.log("Static file audit passed.");
+const fs=require('fs'),path=require('path'),assert=require('assert');
+const root=path.join(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
+const html=read('index.html'),worker=read('worker/worker.js'),setup=read('SETUP.md'),privacy=read('privacy.html'),terms=read('terms.html'),headers=read('_headers');
+let pass=0,fail=0;function t(name,fn){try{fn();pass++;console.log('PASS',name)}catch(e){fail++;console.log('FAIL',name,'-',e.message)}}
+t('public frontend defaults to no payments and no AI',()=>assert(/PAYMENTS_ENABLED:false,AI_ENABLED:false/.test(html)));
+t('frontend does not contain server-secret variable names',()=>assert(!/SUPABASE_SERVICE_ROLE_KEY|RAZORPAY_KEY_SECRET|RAZORPAY_WEBHOOK_SECRET|AI_API_KEY/.test(html)));
+t('AI UI consent text describes what is sent',()=>assert(/first 18,000 characters/.test(html)&&/aiConsent/.test(html)&&!html.includes('selected text/code')));
+t('AI request sends consent and Worker enforces it',()=>assert(/consent:true/.test(html)&&/b\.consent !== true/.test(worker)));
+t('AI combined input ceiling matches database constraint',()=>assert(/> 22000/.test(worker)&&/input_chars between 0 and 22000/.test(read('supabase/schema.sql'))));
+t('OCR dependency is version-pinned and worker is cleaned up',()=>assert(/tesseract\.js@5\.1\.1/.test(html)&&/if\(ocrWorker\).*terminate/.test(html)));
+t('Worker blocks mismatched Origin and oversized webhooks',()=>assert(/requestOrigin !== allowedOrigin/.test(worker)&&/byteLength > 65536/.test(worker)));
+t('Privacy page is clearly marked as an incomplete draft',()=>assert(/Privacy Policy — Draft/.test(privacy)&&/Not ready for public launch/.test(privacy)&&/\[ADD LEGAL NAME\]/.test(privacy)));
+t('Terms page is clearly marked as an incomplete draft',()=>assert(/Terms of Use — Draft/.test(terms)&&/Not ready for public launch/.test(terms)&&/\[ADD LEGAL NAME\]/.test(terms)));
+t('hosting instructions warn GitHub Pages ignores _headers and CSP needs host verification',()=>assert(/GitHub Pages ignores `?_headers`?/.test(setup)&&/Content-Security-Policy/.test(setup)));
+t('security headers include nosniff, referrer policy and frame denial',()=>assert(/X-Content-Type-Options: nosniff/.test(headers)&&/Referrer-Policy: no-referrer/.test(headers)&&/X-Frame-Options: DENY/.test(headers)));
+t('CSP is present with object/frame restrictions and required PDF/Python CDNs',()=>assert(/Content-Security-Policy:/.test(headers)&&/object-src 'none'/.test(headers)&&/frame-ancestors 'none'/.test(headers)&&/cdnjs.cloudflare.com/.test(headers)&&/cdn.jsdelivr.net/.test(headers)));
+t('workspace export/import is validated and size-limited',()=>assert(/format:"research-to-code-workspace"/.test(html)&&/f.size>1048576/.test(html)&&/p.version!==1/.test(html)&&/runs.length>20/.test(html)));
+t('local clearing warns downloaded backups are not deleted',()=>assert(/Previously downloaded backups are not deleted/.test(html)));
+t('account export is authenticated and no-store; deletion requires explicit confirmation',()=>assert(/\/api\/account\/export/.test(html)&&/\/api\/account\/delete/.test(html)&&/DELETE_MY_ACCOUNT/.test(html)&&/cache-control.*no-store/.test(read('worker/worker.js'))));
+t('HTML has no duplicate IDs',()=>{const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);assert.equal(ids.length,new Set(ids).size)});
+t('Pro and Ultra show proposed prices but remain unavailable for purchase',()=>assert(/₹599/.test(html)&&/₹1,299/.test(html)&&/अभी बिक्री नहीं/.test(html)&&/disabled/.test(html)&&/Payments are off/.test(html)));
+t('Python execution has per-run source size limits and an explicit sandbox warning',()=>assert(/code.length>100000\|\|tests.length>50000/.test(html)&&/not a hardened server sandbox/.test(html)));
+t('OCR canvas size is capped to reduce memory spikes',()=>assert(/12000000/.test(html)&&/1800\/Math.max/.test(html)));
+t('CSP no longer permits arbitrary HTTPS connections or remote image/font sources',()=>assert(/connect-src 'self' https:\/\/\*\.supabase\.co https:\/\/\*\.workers\.dev [^;]+;/.test(headers)&&! /connect-src 'self' https:;/.test(headers)&&/img-src 'self' data: blob:;/.test(headers)&&/font-src 'self' data:\s*$/.test(headers)));
+t('HSTS and cross-domain policy headers are present',()=>assert(/Strict-Transport-Security: max-age=31536000/.test(headers)&&/X-Permitted-Cross-Domain-Policies: none/.test(headers)));
+t('Worker crash and failure paths reset and revoke its blob URL',()=>assert(/function resetWorker\(\)/.test(html)&&/URL.revokeObjectURL\(workerUrl\)/.test(html)&&/o.kind!=="done"\)resetWorker\(\)/.test(html)));
+t('Deployment config exists without embedded credentials',()=>{const w=read('wrangler.toml');assert(/main = "worker\/worker.js"/.test(w));assert(!/SUPABASE_SERVICE_ROLE_KEY\s*=|RAZORPAY_KEY_SECRET\s*=|AI_API_KEY\s*=/.test(w))});
+t('Deployment checklist and audit report explicitly block unsafe launch',()=>assert(/PUBLIC LAUNCH BLOCKED/.test(read('DEPLOYMENT_CHECKLIST_HI.md'))&&/NOT READY FOR PUBLIC CUSTOMER LAUNCH/.test(read('PRELAUNCH_AUDIT_REPORT.md'))));
+t('Primary UI styling has fallbacks for older mobile browsers',()=>assert(!/color-mix\(/.test(html)&&/prefers-reduced-motion/.test(html)&&/min-height:48px/.test(html)));
+
+t('premium visual system includes responsive hero, theme control and safe-area navigation',()=>assert(/class="hero"/.test(html)&&/id="themeToggle"/.test(html)&&/env\(safe-area-inset-bottom/.test(html)&&/prefers-reduced-motion/.test(html)));
+
+t('login-first gate appears before the workspace and hides app tabs until access is granted',()=>assert(html.indexOf('id="gateScreen"')<html.indexOf('<div class="wrap">')&&/body:not\(\.app-unlocked\) \.wrap,body:not\(\.app-unlocked\)>#nav\{display:none!important\}/.test(html)&&/function unlockApp\(mode\)/.test(html)));
+t('real sign-in gate uses Supabase email OTP and Google OAuth; it does not fake credentials',()=>assert(/function gateSendCode\(\)/.test(html)&&/signInWithOtp\(\{email:em,options:\{shouldCreateUser:true\}\}\)/.test(html)&&/function gateVerifyCode\(\)/.test(html)&&/provider:"google"/.test(html)));
+t('demo preview is explicit and creates no real account; public launch must turn it off',()=>assert(/DEMO_PREVIEW_BUILD=true/.test(html)&&/Set false before any public deployment/.test(html)&&/rtc_preview_access_v1/.test(html)&&/no real account is created|असली अकाउंट नहीं बनेगा/i.test(html)));
+t('Hindi and English selectors are visible on the entry screen and inside the workspace',()=>assert(/id="gateLanguage"/.test(html)&&/id="languageToggle"/.test(html)&&/rtc_language_v1/.test(html)&&/gateTitle:"Sign in to continue"/.test(html)&&/heroTitle:"From research to code/.test(html)));
+t('navigation click handling supports dynamically-rendered shortcuts via event delegation',()=>assert(/function routeDataGo\(e\)/.test(html)&&/document\.addEventListener\("click",routeDataGo\)/.test(html)&&/closest\("\[data-go\]"\)/.test(html)));
+
+t('local autosave is device-local, bounded and does not autosave AI outputs or run logs',()=>{const fn=html.match(/function saveDraft\(\)\{[\s\S]*?\nfunction scheduleSave/)[0];assert(/SAVE_KEY="rtc_workspace_draft_v1"/.test(html)&&/raw.length>450000/.test(fn)&&/local storage/.test(html)&&!fn.includes('aiOutput:')&&!fn.includes('runs:'))});
+t('PWA shell has manifest, install controls and service worker with same-origin-only caching',()=>{const manifest=JSON.parse(read('manifest.webmanifest')),sw=read('sw.js');assert.equal(manifest.display,'standalone');assert(/icon-192\.png/.test(manifest.icons[0].src));assert(/beforeinstallprompt/.test(html)&&/navigator\.serviceWorker\.register/.test(html));assert(/url\.origin !== self\.location\.origin/.test(sw)&&/request\.method !== "GET"/.test(sw)&&/research-to-code-shell-v1/.test(sw))});
+t('Worker JSON responses are no-store and reject oversized UTF-8 payloads by byte length',()=>assert(/cache-control": "no-store"/.test(worker)&&/enc\.encode\(raw\)\.byteLength > maxBody/.test(worker)&&/AbortSignal\.timeout\(12000\)/.test(worker)));
+t('mobile performance overrides disable blur, shadows and transitions globally',()=>assert(/\*,\*::before,\*::after\{animation:none!important;transition:none!important;scroll-behavior:auto!important\}/.test(html)&&/backdrop-filter:none!important/.test(html)&&/contain:layout paint/.test(html)));
+t('theme toggle accounts for system dark mode on first tap',()=>assert(/matchMedia\(\"\(prefers-color-scheme: dark\)\"\)/.test(html)));
+t('pricing shows contribution assumptions and keeps live checkout disabled',()=>assert(/₹261/.test(html)&&/₹605/.test(html)&&/PAYMENTS_ENABLED:false/.test(html)&&/Proposed|प्रस्तावित/.test(html)));
+t('diagnostic report is explicit and excludes source, PDF, token and secret values',()=>assert(/downloadDiagnostics/.test(html)&&/deliberately excludes code, tests, PDF text, account email, access tokens and API secrets/.test(html)&&/user_agent/.test(html)));
+console.log(`\n${pass} passed, ${fail} failed`);process.exit(fail?1:0);

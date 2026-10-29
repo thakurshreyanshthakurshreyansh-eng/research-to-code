@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#4f46e5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Research to Code — आसान रिसर्च टूल</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%84%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--ink:#14213d;--mut:#5b6578;--line:#d9dfeb;--pri:#1d3a8a;--priInk:#fff;--acc:#c77700;--accBg:#fff4de;--ok:#0b7a5c;--okBg:#dff5ec;--sug:#475569;--sugBg:#eef1f6;--add:#e3f6ea;--del:#fde8e8;--code:#0f1a33;--codeInk:#e6ecfa;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1424;--card:#151e33;--ink:#e8edf8;--mut:#9aa6bf;--line:#2a3652;--pri:#7c9dff;--priInk:#0d1424;--acc:#f0a63a;--accBg:#2e2410;--ok:#4cd2a4;--okBg:#10332a;--sug:#b4bfd6;--sugBg:#1c2740;--add:#12382a;--del:#41202a;--code:#0a101e;--codeInk:#dbe4fa}}
+:root[data-theme="dark"]{--bg:#0d1424;--card:#151e33;--ink:#e8edf8;--mut:#9aa6bf;--line:#2a3652;--pri:#7c9dff;--priInk:#0d1424;--acc:#f0a63a;--accBg:#2e2410;--ok:#4cd2a4;--okBg:#10332a;--sug:#b4bfd6;--sugBg:#1c2740;--add:#12382a;--del:#41202a;--code:#0a101e;--codeInk:#dbe4fa}
+*,*:before,*:after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:radial-gradient(ellipse at 8% -10%,rgba(29,58,138,.10),transparent 42%),var(--bg);color:var(--ink);font:16px/1.5 system-ui,Roboto,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 96px}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 0 10px}
+.brand{font-weight:700;font-size:18px;letter-spacing:-.2px}
+.brand small{display:block;font-weight:400;font-size:12px;color:var(--mut)}
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.c-acc{background:var(--accBg);color:var(--acc);border:1px solid var(--acc)}
+.c-sug{background:var(--sugBg);color:var(--sug);border:1.5px dashed var(--sug)}
+.c-ok{background:var(--okBg);color:var(--ok);border:1.5px solid var(--ok)}
+.c-pri{background:transparent;color:var(--pri);border:1px solid var(--pri)}
+.banner{background:var(--accBg);border:1px solid var(--acc);border-left-width:5px;border-radius:8px;padding:10px 12px;font-size:14px;margin-bottom:16px}
+h1{font-size:25px;line-height:1.2;margin:6px 0 8px;letter-spacing:-.4px}
+h2{font-size:19px;margin:22px 0 8px}
+h3{font-size:16px;margin:0 0 4px}
+p{margin:0 0 10px}
+.mut{color:var(--mut);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 5px 20px rgba(20,33,61,.045);transition:border-color .18s ease,transform .18s ease,box-shadow .18s ease}.card:focus-within{border-color:var(--pri)}.planFuture{background:linear-gradient(145deg,var(--card),var(--bg))}
+.tab{display:none}.tab.on{display:block}
+button{font:inherit;cursor:pointer}
+.btn{display:block;width:100%;min-height:48px;border-radius:12px;border:0;background:linear-gradient(135deg,var(--pri),#6754e8);color:var(--priInk);font-weight:650;padding:10px 14px;box-shadow:0 4px 12px rgba(29,58,138,.16);transition:transform .15s ease,filter .15s ease}.btn:not([disabled]):active{transform:translateY(1px);filter:brightness(.96)}
+.btn.alt{background:transparent;color:var(--pri);border:1.5px solid var(--pri)}
+.btn[disabled]{background:var(--sugBg);color:var(--mut);border:1.5px dashed var(--line);cursor:not-allowed}
+.btn+.btn{margin-top:10px}
+.drop{position:relative;display:block;border:2px dashed var(--pri);border-radius:12px;padding:22px 14px;text-align:center;cursor:pointer;background:var(--card)}
+.drop b{display:block;font-size:17px}
+.drop input{position:absolute;width:1px;height:1px;opacity:0}
+.drop:focus-within{outline:3px solid var(--pri);outline-offset:2px}
+textarea{width:100%;min-height:290px;border-radius:10px;border:1px solid var(--line);background:var(--code);color:var(--codeInk);font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;padding:12px;resize:vertical;white-space:pre;overflow:auto}
+.seg{display:flex;background:var(--sugBg);border-radius:10px;padding:3px;gap:3px;margin:10px 0}
+.seg button{flex:1;min-height:42px;border:0;border-radius:8px;background:transparent;color:var(--mut);font-weight:600;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.codebox{background:var(--code);color:var(--codeInk);border-radius:10px;overflow-x:auto;font:13px/1.55 ui-monospace,Menlo,Consolas,monospace;padding:10px 0}
+.ln{display:block;white-space:pre;padding:0 12px;min-width:max-content}
+.ln.add{background:var(--add);color:var(--ink)}.ln.del{background:var(--del);color:var(--ink)}
+.ln i{display:inline-block;width:1.4em;font-style:normal;opacity:.7}
+.stat{display:flex;gap:10px;margin:8px 0}
+.stat div{flex:1;border-radius:10px;padding:10px;text-align:center;font-size:13px;background:var(--card);border:1px solid var(--line)}
+.stat b{display:block;font-size:24px;line-height:1.1}
+.test{border:1.5px dashed var(--sug);border-radius:10px;padding:11px 12px;margin:8px 0;background:var(--card)}
+.test .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.empty{border:2px solid var(--ok);border-radius:12px;padding:14px;background:var(--okBg)}
+ul.f{list-style:none;margin:8px 0 0;padding:0}
+ul.f li{padding:7px 0 7px 26px;position:relative;border-top:1px solid var(--line);font-size:14.5px}
+ul.f li:before{content:"";position:absolute;left:3px;top:13px;width:11px;height:11px;border-radius:50%}
+ul.f li.w:before{background:var(--ok)}
+ul.f li.p:before{border:2px dashed var(--sug)}
+.plans{display:grid;gap:12px}.aiGrid{display:grid;gap:10px}.aiOut{white-space:pre-wrap;overflow-wrap:anywhere;max-height:none}.consent{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--mut);margin:10px 0}.consent input{width:20px;height:20px;flex:0 0 auto}.pillrow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:20}
+nav button{flex:1;border:0;background:none;color:var(--mut);padding:8px 2px 7px;font-size:11.5px;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:56px}
+nav button[aria-current="page"]{color:var(--pri);font-weight:700}
+nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+details summary{cursor:pointer;font-weight:600;font-size:14px;min-height:40px;display:flex;align-items:center;color:var(--pri)}
+:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+.note{font-size:13px;color:var(--mut)}
+.toast{font-size:14px;margin-top:8px;color:var(--ink)}
+.sm{min-height:180px}.txt{white-space:pre-wrap;word-break:break-word;max-height:260px;overflow:auto;padding:10px 12px}
+.ln.mod{background:var(--accBg);color:var(--ink)}.c-bad{background:var(--del);color:var(--ink);border:1.5px solid #c0392b}
+h3+textarea{margin-top:4px}.inp{width:100%;min-height:48px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:16px system-ui,Roboto,sans-serif;padding:10px 12px;margin:6px 0}button.chip{font:inherit;font-size:13px;font-weight:600;cursor:pointer;min-height:34px;padding:3px 14px}@media (min-width:760px){.wrap{max-width:760px}.plans{grid-template-columns:repeat(2,minmax(0,1fr))}.aiGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Research to Code visual system: calm hierarchy, soft surfaces, focused actions. */
+:root{--bg:#f5f7fc;--card:#ffffff;--ink:#111a2e;--mut:#667085;--line:#e2e7f0;--pri:#4f46e5;--priInk:#fff;--acc:#9a6700;--accBg:#fff7e6;--ok:#087f5b;--okBg:#e6f8f0;--sug:#64748b;--sugBg:#f1f4f9;--add:#e6f8ef;--del:#fff0f0;--code:#101828;--codeInk:#e6edf8}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0f1c;--card:#111a2b;--ink:#f0f4ff;--mut:#9ba8c1;--line:#27334a;--pri:#a5b4fc;--priInk:#111827;--acc:#f5c46b;--accBg:#2a2315;--ok:#63dfb3;--okBg:#103529;--sug:#b1bfd6;--sugBg:#1a263b;--add:#12382c;--del:#3c2029;--code:#080d17;--codeInk:#e6edf8}}
+:root[data-theme="dark"]{--bg:#0a0f1c;--card:#111a2b;--ink:#f0f4ff;--mut:#9ba8c1;--line:#27334a;--pri:#a5b4fc;--priInk:#111827;--acc:#f5c46b;--accBg:#2a2315;--ok:#63dfb3;--okBg:#103529;--sug:#b1bfd6;--sugBg:#1a263b;--add:#12382c;--del:#3c2029;--code:#080d17;--codeInk:#e6edf8}
+body{background:radial-gradient(ellipse at 12% -12%,rgba(99,102,241,.17),transparent 38%),radial-gradient(ellipse at 96% 2%,rgba(14,165,233,.08),transparent 28%),var(--bg);letter-spacing:-.01em}
+.wrap{max-width:1120px;padding:0 22px 120px}
+header{padding:20px 0 18px;gap:12px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.brand{display:flex;align-items:center;gap:12px;font-size:19px;letter-spacing:-.55px}
+.brand:before{content:"R↗";display:grid;place-items:center;width:38px;height:38px;border-radius:13px;background:linear-gradient(145deg,#4f46e5,#0ea5e9);color:#fff;font-size:15px;font-weight:850;box-shadow:0 8px 24px rgba(79,70,229,.22)}
+.brand small{font-size:12px;letter-spacing:.01em;margin-top:2px}
+.headActions{display:flex;align-items:center;gap:8px}
+.iconBtn{min-height:40px;min-width:42px;padding:7px 11px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font-weight:650}
+.hero{position:relative;overflow:hidden;padding:clamp(22px,4vw,42px);border:1px solid rgba(129,140,248,.26);border-radius:26px;background:linear-gradient(125deg,rgba(79,70,229,.12),rgba(14,165,233,.07) 58%,var(--card));box-shadow:0 20px 60px rgba(15,23,42,.06);margin:0 0 20px}
+.hero:after{content:"";position:absolute;width:230px;height:230px;border-radius:50%;right:-70px;top:-100px;background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%);pointer-events:none}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--pri);margin-bottom:12px}
+.eyebrow:before{content:"";width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 0 4px rgba(16,185,129,.13)}
+.hero h1{font-size:clamp(29px,4.8vw,46px);max-width:780px;line-height:1.08;letter-spacing:-1.5px;margin:0 0 12px}
+.hero p{max-width:690px;font-size:clamp(14px,1.7vw,17px);color:var(--mut);margin:0}
+.heroFoot{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.heroFoot .chip{padding:7px 11px;border:1px solid var(--line);background:var(--card);font-size:12px}
+.banner{border-radius:14px;border-left-width:4px;line-height:1.55;padding:13px 15px}
+.tab{animation:fadeIn .18s ease-out}
+@keyframes fadeIn{from{opacity:.72;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+.tab>h1{font-size:clamp(25px,3vw,32px);letter-spacing:-.9px;margin-top:10px}
+.card{border-radius:18px;padding:19px;margin:14px 0;box-shadow:0 4px 18px rgba(15,23,42,.035);border-color:var(--line)}
+.card:hover{border-color:rgba(99,102,241,.38);box-shadow:0 12px 28px rgba(15,23,42,.055)}
+.btn{border-radius:12px;background:linear-gradient(135deg,#4f46e5,#6366f1 58%,#0ea5e9);box-shadow:0 7px 18px rgba(79,70,229,.18);letter-spacing:-.01em}
+.btn.alt{box-shadow:none;border-color:var(--line);background:var(--card)}
+.drop{border-radius:17px;padding:28px 16px;background:linear-gradient(135deg,var(--card),rgba(99,102,241,.045));border-color:rgba(99,102,241,.52);transition:background .2s,border-color .2s}
+.drop:hover{background:rgba(99,102,241,.07);border-color:var(--pri)}
+textarea,.codebox{border-radius:13px}
+.inp{border-radius:12px}
+.plans{grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr))}
+nav{left:50%;right:auto;transform:translateX(-50%);bottom:12px;width:min(760px,calc(100% - 24px));border:1px solid var(--line);border-radius:19px;padding:5px 7px env(safe-area-inset-bottom,0px);box-shadow:0 16px 50px rgba(15,23,42,.16);background:rgba(255,255,255,.88);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+@media(prefers-color-scheme:dark){nav{background:rgba(17,26,43,.9)}}:root[data-theme="dark"] nav{background:rgba(17,26,43,.9)}
+nav button{border-radius:13px;min-height:54px;font-size:11px;transition:background .15s,color .15s}
+nav button[aria-current="page"]{background:rgba(99,102,241,.11);color:var(--pri)}
+nav svg{width:20px;height:20px}
+@media(min-width:1050px){.wrap{max-width:1120px}.plans{grid-template-columns:repeat(3,minmax(0,1fr))}.aiGrid{grid-template-columns:repeat(2,minmax(0,1fr))}nav{top:12px;bottom:auto;left:50%;width:min(600px,calc(100% - 550px));transform:translateX(-50%);padding:4px 6px;border-radius:15px}nav button{min-height:43px;flex-direction:row;gap:7px;font-size:12px}nav svg{width:17px;height:17px}header{padding-right:0}.hero{margin-top:8px}}
+@media(max-width:480px){.wrap{padding-left:14px;padding-right:14px}.brand{font-size:16px}.brand:before{width:34px;height:34px}.hero{border-radius:21px}.hero h1{letter-spacing:-1px}.headActions{gap:5px}.iconBtn{min-width:38px;padding:6px 8px}.card{padding:15px}}
+@media(prefers-reduced-motion:reduce){.tab{animation:none!important}}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+/* Low-cost mobile UI: avoid blur, large shadows and decorative movement on modest phones. */
+html{scroll-behavior:auto}body{background:var(--bg);letter-spacing:0}.card,.btn,.tab,nav button,.drop{transition:none!important;animation:none!important}.card,.card:hover{box-shadow:none;transform:none}.card:hover{border-color:var(--line)}nav{left:12px;right:12px;transform:none;width:auto;bottom:8px;background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:0 -2px 10px rgba(15,23,42,.06)}nav button{font-size:12px;min-height:50px}header{gap:8px;margin-bottom:12px;padding:12px 0}.wrap{padding-bottom:86px}.hero{background:var(--card);box-shadow:none}.hero:before{display:none}.hero h1{font-size:clamp(26px,7vw,36px);letter-spacing:-.6px}.banner{margin-bottom:12px}.homeIntro{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 8px}.homeIntro h1{font-size:23px;margin:0 0 3px}.quickGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quickAction{min-width:0;display:flex;align-items:center;gap:9px;text-align:left;padding:13px 10px;border:1px solid var(--line);border-radius:15px;background:var(--card);color:var(--ink);min-height:88px}.quickAction b,.quickAction small{display:block}.quickAction b{font-size:14px}.quickAction small{font-size:11px;color:var(--mut);line-height:1.35;margin-top:3px}.quickIcon{font-size:21px;flex:0 0 auto}.quickArrow{margin-left:auto;color:var(--pri);font-size:21px}.planPreview{margin-top:14px}.planHead{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.planHead h2{font-size:18px}.miniLink{border:0;background:transparent;color:var(--pri);font:600 13px system-ui;padding:8px 0;white-space:nowrap}.tierStrip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px}.tierMini{min-width:0;border:1px solid var(--line);border-radius:12px;padding:9px 7px;background:var(--bg);color:var(--ink);text-align:left}.tierMini b,.tierMini span,.tierMini small{display:block}.tierMini b{font-size:13px}.tierMini span{font-size:11px;margin-top:3px;line-height:1.35}.tierMini small{font-size:10px;color:var(--mut);margin-top:4px;line-height:1.35;overflow-wrap:anywhere}.tierMini em{font-style:normal;font-size:10px;background:var(--sugBg);padding:3px 6px;border-radius:99px;color:var(--mut)}.tierPro{border-color:#8b5cf6}.tierUltra{border-color:#0ea5e9}.accountPreview{display:grid;gap:10px}.accountPreview .btn{margin:0}.quickAction:active,.tierMini:active{background:var(--sugBg)}@media(min-width:650px){.quickGrid{grid-template-columns:repeat(4,minmax(0,1fr))}.tierMini{padding:12px}.accountPreview{grid-template-columns:1fr auto;align-items:center}.accountPreview .btn{width:auto}.wrap{padding-bottom:90px}}@media(min-width:1050px){nav{top:auto;bottom:8px;left:12px;right:12px;transform:none;width:auto}nav button{flex-direction:column;min-height:50px}}
+
+/* Login-first entry, compact touch targets and language controls. */
+#gateScreen{position:fixed;inset:0;z-index:1000;overflow-y:auto;background:var(--bg);padding: max(14px,env(safe-area-inset-top,0px)) 16px max(20px,env(safe-area-inset-bottom,0px));display:flex;align-items:center;justify-content:center}
+.gateInner{width:min(100%,480px);margin:auto}
+.gateTop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.gateBrand{font-weight:800;letter-spacing:-.4px;font-size:18px;display:flex;gap:10px;align-items:center}
+.gateLogo{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;color:#fff;background:linear-gradient(140deg,#4f46e5,#0891b2);font-weight:900}
+.langSelect{min-height:42px;min-width:104px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--ink);font:600 14px system-ui;padding:7px 10px}
+.gateCard{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:clamp(18px,5vw,26px);box-shadow:0 12px 35px rgba(15,23,42,.06)}
+.gateIcon{font-size:28px;margin-bottom:8px}.gateCard h1{font-size:clamp(26px,7vw,34px);letter-spacing:-.7px;margin:5px 0 10px}.gateCard .mut{line-height:1.55}.gateDivider{display:flex;align-items:center;gap:10px;color:var(--mut);font-size:12px;margin:14px 0}.gateDivider:before,.gateDivider:after{content:"";height:1px;background:var(--line);flex:1}.gateMessage{font-size:13px;line-height:1.55;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);margin:12px 0}.gateButtons{display:grid;gap:10px;margin-top:14px}.gateButtons .btn{margin:0}.gateFine{font-size:12px;color:var(--mut);margin:14px 0 0;line-height:1.5}
+body:not(.app-unlocked) .wrap,body:not(.app-unlocked)>#nav{display:none!important}
+[hidden]{display:none!important}
+button,select,label.drop{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+@media(max-width:420px){.gateTop{align-items:flex-start}.gateCard{border-radius:18px}.gateBrand{font-size:16px}.gateLogo{width:34px;height:34px}}
+
+
+/* Low-end Android performance pass: no backdrop blur, gradients, animated theme transitions or heavy shadows. */
+:root{padding:0!important;scroll-behavior:auto!important}
+html,body{scroll-behavior:auto!important;-webkit-text-size-adjust:100%;overscroll-behavior-x:none}
+body{background:var(--bg)!important;min-height:100%;}
+*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+.card,.gateCard,.btn,.iconBtn,.hero,.quickAction,.tierMini,nav{box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+body,header,.wrap,.tab,.card,button,select,input,textarea{transform:none!important;filter:none!important}
+nav{background:var(--card)!important;contain:layout paint;will-change:auto}
+.tab{content-visibility:auto;contain-intrinsic-size:auto 600px}
+button,select,input,label.drop{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button{min-height:44px}
+@media(max-width:520px){.wrap{padding-left:14px;padding-right:14px}.headActions{gap:5px}.headActions .langSelect{min-width:78px;max-width:94px;padding:6px}.iconBtn{min-width:40px;padding:6px 8px}.brand{font-size:16px}.brand small{font-size:10px}.tierStrip{gap:5px}.tierMini{padding:8px 5px}.tierMini small{font-size:10px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+
+.priceLine{display:flex;align-items:baseline;gap:5px;margin:10px 0 12px}.priceLine strong{font-size:32px;letter-spacing:-1px}.lang-en{display:none}html[lang="en"] .lang-en{display:inline}html[lang="en"] .lang-hi{display:none}html[lang="hi"] .lang-hi{display:inline}
+
+</style>
+</head>
+<body>
+<main id="gateScreen" aria-labelledby="gateTitle">
+  <div class="gateInner">
+    <div class="gateTop"><div class="gateBrand"><span class="gateLogo">R↗</span><span>Research to Code<small id="gateBrandSub" style="display:block;font-size:11px;font-weight:450;color:var(--mut);letter-spacing:0">रिसर्च से कोड तक</small></span></div>
+      <label><span class="note" id="gateLanguageLabel" style="display:block;margin:0 0 3px">भाषा / Language</span><select id="gateLanguage" class="langSelect" aria-label="भाषा चुनें"><option value="hi">हिंदी</option><option value="en">English</option></select></label>
+    </div>
+    <section class="gateCard">
+      <div class="gateIcon" aria-hidden="true">🔐</div><div class="eyebrow" id="gateEyebrow">आपका सुरक्षित वर्कस्पेस</div>
+      <h1 id="gateTitle">पहले साइन इन करें</h1>
+      <p class="mut" id="gateDescription">अपने अकाउंट से प्रवेश करें। प्रवेश के बाद ऊपर से हिंदी या English चुन सकते हैं।</p>
+      <div id="gateSetupMessage" class="gateMessage" role="status" aria-live="polite">लॉगिन सेवा अभी इस प्रीव्यू में सेट नहीं है।</div>
+      <div id="gateAuthForms" hidden>
+        <label for="gateEmail" id="gateEmailLabel" class="note">ईमेल पता</label>
+        <input id="gateEmail" class="inp" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com">
+        <button id="gateSendOtp" class="btn" type="button">ईमेल पर साइन-इन कोड भेजें</button>
+        <div id="gateOtpBox" hidden>
+          <label for="gateOtp" id="gateOtpLabel" class="note">ईमेल में मिला कोड</label>
+          <input id="gateOtp" class="inp" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456">
+          <button id="gateVerifyOtp" class="btn" type="button">कोड जाँचकर प्रवेश करें</button>
+        </div>
+        <div class="gateDivider" id="gateOr">या</div>
+        <button id="gateGoogle" class="btn alt" type="button">Google से जारी रखें</button>
+      </div>
+      <div id="gatePreviewArea" class="gateButtons" hidden>
+        <button id="gateDemo" class="btn" type="button">डेमो में प्रवेश करें</button>
+      </div>
+      <p id="gateStatus" class="toast" role="status" aria-live="polite"></p>
+      <p class="gateFine" id="gateFine">डेमो मोड में असली अकाउंट नहीं बनेगा और कोई भुगतान नहीं होगा। साइन-इन/AI/पेमेंट सर्वर कॉन्फ़िगरेशन के बिना उपलब्ध नहीं हैं।</p>
+    </section>
+    <p class="gateFine" id="gateOpenHint" style="text-align:center">अगर बटन काम न करें, इस HTML को डाउनलोड करके Chrome में खोलें—फ़ाइल प्रीव्यू/रीडर में नहीं।</p>
+  </div>
+</main>
+<div class="wrap">
+<header><div class="brand">Research to Code<small id="brandSub">पेपर पढ़ें · कोड जाँचें · टेस्ट चलाएँ</small></div><div class="headActions"><select id="languageToggle" class="langSelect" aria-label="भाषा चुनें"><option value="hi">हिंदी</option><option value="en">English</option></select><button class="iconBtn" id="installBtn" type="button" hidden>＋ ऐप</button><button class="iconBtn" id="themeToggle" type="button" aria-label="थीम बदलें" title="थीम बदलें">◐ थीम</button><button class="chip c-pri" id="acBtn" type="button">साइन इन</button></div></header>
+<section class="hero" aria-labelledby="heroTitle"><div class="eyebrow" id="heroEyebrow">आपका रिसर्च वर्कस्पेस</div><h1 id="heroTitle">रिसर्च से कोड तक — एक आसान जगह पर।</h1><p id="heroLead">PDF पढ़ें, कोड में बदलाव देखें और Python टेस्ट चलाएँ। शुरुआत करने के लिए नीचे कोई काम चुनें।</p><div class="heroFoot"><span class="chip c-ok" id="localChip">● आपके डिवाइस पर काम</span><span class="chip c-sug" id="saveBadge" role="status" aria-live="polite">ड्राफ्ट सेव हो रहा है…</span></div></section>
+<div class="banner" id="mainBanner"><b>ज़रूरी सूचना:</b> PDF पढ़ना, कोड तुलना और टेस्ट आपके ब्राउज़र में चलते हैं। AI, असली साइन-अप और पेमेंट तभी चलेंगे जब सर्वर सेटअप हो। अभी इस प्रीव्यू में वे चालू नहीं हैं।</div><div class="banner" id="previewModeBanner" hidden><b>डेमो मोड:</b> कोई असली अकाउंट नहीं बना है। PDF, कोड तुलना और टेस्ट आपके इस डिवाइस पर चलते हैं; AI और भुगतान चालू नहीं हैं।</div>
+<section class="tab on" id="home">
+  <div class="homeIntro"><div><h1 id="homeTitle">आज क्या करना है?</h1><p class="mut" id="homeLead">एक बटन दबाएँ — बाकी स्टेप्स यहीं मिलेंगे।</p></div><span class="chip c-ok" id="homeFreeChip">शुरुआत मुफ़्त</span></div>
+  <div class="quickGrid">
+    <button class="quickAction" data-go="paper" type="button"><span class="quickIcon">📄</span><span><b id="quickPaperTitle">PDF पढ़ें</b><small id="quickPaperSub">पेपर से टेक्स्ट निकालें</small></span><span class="quickArrow">›</span></button>
+    <button class="quickAction" data-go="code" type="button"><span class="quickIcon">⌨️</span><span><b id="quickCodeTitle">कोड जाँचें</b><small id="quickCodeSub">दो वर्ज़न की तुलना करें</small></span><span class="quickArrow">›</span></button>
+    <button class="quickAction" data-go="proof" type="button"><span class="quickIcon">✓</span><span><b id="quickTestTitle">टेस्ट चलाएँ</b><small id="quickTestSub">ब्राउज़र में Python / pytest</small></span><span class="quickArrow">›</span></button>
+    <button class="quickAction" data-go="ai" type="button"><span class="quickIcon">✦</span><span><b id="quickAiTitle">AI मदद</b><small id="quickAiSub">सर्वर सेटअप होने पर उपलब्ध</small></span><span class="quickArrow">›</span></button>
+  </div>
+  <div class="card planPreview"><div class="planHead"><div><span class="eyebrow" id="planEyebrow">प्लान चुनें</span><h2 id="planHeading" style="margin:4px 0">Free, Pro और Ultra</h2><p class="mut" id="planLead">अभी Pro/Ultra प्रीव्यू हैं; खरीद चालू नहीं है।</p></div><button class="miniLink" id="planCompare" data-go="plans" type="button">तुलना देखें ›</button></div>
+    <div class="tierStrip"><button class="tierMini" data-go="plans" type="button"><b>Free</b><span>अभी इस्तेमाल करें</span><small>PDF · कोड तुलना · टेस्ट</small></button><button class="tierMini tierPro" data-go="plans" type="button"><b>Pro <em>प्लान</em></b><span class="lang-hi">₹599 / माह*</span><span class="lang-en">₹599 / month*</span><small><span class="lang-hi">50 AI अनुरोध तक — प्रस्तावित; अभी चालू नहीं</span><span class="lang-en">Up to 50 AI requests — proposed, not active</span></small></button><button class="tierMini tierUltra" data-go="plans" type="button"><b>Ultra <em>प्लान</em></b><span class="lang-hi">₹1,299 / माह*</span><span class="lang-en">₹1,299 / month*</span><small><span class="lang-hi">200 AI अनुरोध तक — प्रस्तावित; अभी चालू नहीं</span><span class="lang-en">Up to 200 AI requests — proposed, not active</span></small></button></div>
+  </div>
+  <div class="card accountPreview"><div><h3 id="accountPreviewTitle">अपना अकाउंट जोड़ें</h3><p class="mut" id="accountPreviewNote" style="margin:3px 0 0">असली साइन-अप के लिए सर्वर सेटअप चाहिए। इस प्रीव्यू में डेमो से लोकल टूल जाँच सकते हैं।</p></div><button class="btn alt" id="accountPreviewButton" data-go="account" type="button">साइन-अप स्थिति देखें</button></div>
+  <p class="note" id="homeTip">टिप: आपकी कोड ड्राफ्ट इसी डिवाइस पर सेव होती है। AI बटन दबाने से पहले डेटा-शेयरिंग नोटिस पढ़ें।</p>
+</section>
+
+<section class="tab" id="paper">
+  <h1 id="paperTitle">PDF पेपर पढ़ें</h1>
+  <p class="mut" id="paperIntro">अपने फोन से PDF चुनें। टेक्स्ट इसी डिवाइस पर निकलेगा।</p>
+  <label class="drop"><input type="file" id="pdf" accept="application/pdf,.pdf"><b id="choosePdfLabel">＋ PDF चुनें</b><span class="mut">15 MB और 100 पेज तक</span></label>
+  <div id="pdfMsg" class="card" hidden role="status"></div><button class="btn alt" id="ocrBtn" type="button" hidden>Try local OCR (up to 5 pages)</button>
+  <div id="pdfOut" hidden>
+    <div class="stat"><div><b id="sPages">0</b>pages read</div><div><b id="sChars">0</b>characters</div></div>
+    <div class="card"><h3>Sections found</h3><p class="note">Found by simple text search, not AI. It can miss or misread headings.</p><ul class="f" id="heads"></ul></div>
+    <div class="card"><h3>Algorithms and equations</h3><p id="algos" class="mut" style="margin:0"></p></div>
+    <div class="card"><h3>Extracted text</h3><div class="codebox txt" id="prev"></div><button class="btn alt" id="copyTxt" style="margin-top:10px">Copy all text</button><div class="toast" id="txtMsg" role="status"></div></div>
+    <button class="btn" data-go="code">Continue to code</button>
+  </div>
+  <p class="note" style="margin-top:14px">Use the AI Lab tab for summaries and explanations when the owner configures an AI provider. Scanned PDFs can try local OCR.</p>
+</section>
+
+<section class="tab" id="code">
+  <h1 id="codeTitle">कोड जाँचें</h1>
+  <p class="mut" id="codeIntro">पुराना और नया कोड डालें, फिर तुलना करें।</p>
+  <h3>Before</h3><textarea id="before" class="sm" spellcheck="false" aria-label="Code before"></textarea>
+  <h3 style="margin-top:12px">After</h3><textarea id="after" class="sm" spellcheck="false" aria-label="Code after"></textarea>
+  <button class="btn" id="cmp" style="margin-top:12px">Compare</button>
+  <button class="btn alt" id="ex">Load example pair and tests</button>
+  <button class="btn alt" id="exportWorkspace" type="button">Export workspace backup (.json)</button>
+  <label class="btn alt" for="importWorkspace" style="text-align:center;margin-top:10px">Import workspace backup (.json)<input id="importWorkspace" type="file" accept="application/json,.json" style="display:none"></label>
+  <p class="note">Backup stays on your device unless you choose to share the downloaded file. Imports are size-limited and validated.</p>
+  <button class="btn alt" id="clr">Clear workspace and run history</button>
+  <div id="workspaceMsg" class="toast" role="status"></div>
+</section>
+
+<section class="tab" id="result">
+  <h1>Compare</h1>
+  <div id="resEmpty" class="card"><p>Add code in the Code tab first.</p><button class="btn" data-go="code">Go to code</button></div>
+  <div id="resBody" hidden>
+    <div class="seg" id="cseg" role="group" aria-label="Comparison mode"><button data-c="diff" aria-pressed="true">Changes</button><button data-c="before" aria-pressed="false">Before</button><button data-c="after" aria-pressed="false">After</button></div>
+    <div class="stat"><div><b id="nAdd">0</b>added</div><div><b id="nDel">0</b>removed</div><div><b id="nMod">0</b>modified</div></div>
+    <div class="codebox" id="cmpBox"></div>
+    <button class="btn alt" id="copy" style="margin-top:10px">Copy After code</button>
+    <button class="btn alt" id="dl">Download After as .py</button>
+    <div class="toast" id="copyMsg" role="status"></div>
+  </div>
+</section>
+
+<section class="tab" id="proof">
+  <h1 id="proofTitle">टेस्ट चलाएँ</h1>
+  <p class="mut" id="proofIntro">टेस्ट सच में चलेंगे; रिज़ल्ट रन पूरा होने पर दिखेगा।</p>
+  <div class="card">
+    <p style="margin-bottom:8px"><span class="chip c-sug">Not run</span> Test text that has not been executed.</p>
+    <p style="margin:0"><span class="chip c-ok">Executed</span> A run that really happened, with its real output.</p>
+  </div>
+  <h2>Tests</h2>
+  <p class="note">Write pytest tests that import from <b>solution</b>. Your code is saved as solution.py before each run.</p>
+  <textarea id="tests" class="sm" spellcheck="false" aria-label="Tests"></textarea>
+  <div id="tState" style="margin:8px 0"></div>
+  <div class="seg" id="tseg" role="group" aria-label="Run against"><button data-t="after" aria-pressed="true">Run After</button><button data-t="before" aria-pressed="false">Run Before</button></div>
+  <button class="btn" id="run">Run tests</button>
+  <button class="btn alt" id="stop" hidden>Stop</button>
+  <div class="toast" id="runStatus" role="status"></div>
+  <p class="note">Python runs inside this browser tab. The first run downloads Python and pytest from jsDelivr, so you need internet and a few MB of data. The installable offline shell can reopen the interface after a first visit, but PDF/Python/OCR libraries and sign-in still require internet. Network use by your code is switched off as far as we can, but only run code you trust. The example tests call detect_ewma, so running them on the example Before code shows a real import error. Browser execution is not a hardened server sandbox: run only code you trust; very memory-intensive code can still slow or crash the browser.</p>
+  <h2>Executed runs</h2>
+  <div id="runs"></div>
+  <div class="card"><h3>What passing means</h3><p class="mut" style="margin:0">Passing tests show only that the code does what those tests check. They do not show that a paper’s results are reproduced.</p></div>
+</section>
+
+<section class="tab" id="ai">
+  <h1 id="aiTitle">AI मदद</h1>
+  <p class="mut">Research summaries, method/equation explanations, code improvement and test generation. Requires sign-in and owner-configured AI API.</p>
+  <div class="card"><h3>Privacy and cost control</h3><p class="mut" style="margin:0">The first 18,000 characters of current PDF text, or the code/tests entered, are sent to the configured AI provider only when you check the consent box and press an AI button. The app does not upload the original PDF file or save AI inputs as history by default. Monthly limits are enforced by the backend. AI can be wrong; verify all claims and code.</p>
+  <label class="consent"><input id="aiConsent" type="checkbox"><span>I understand that pressing an AI button sends the current PDF's first 18,000 characters, or the code/tests entered here, to the configured AI provider. The provider may have its own data-retention rules.</span></label></div>
+  <div class="card aiGrid">
+    <h3>Paper summary</h3><p class="note">Summarize the current PDF text, including key claims, assumptions, limitations and unanswered questions.</p><button class="btn" data-ai="summary" type="button">Summarize paper</button>
+    <h3>Methods and equations</h3><p class="note">Explain methods, variables and equations in plain English. Check against the original paper.</p><button class="btn alt" data-ai="explain" type="button">Explain methods & equations</button>
+  </div>
+  <div class="card aiGrid"><h3>Improve code</h3><p class="note">Suggest a safer/clearer implementation and explain each meaningful change.</p><button class="btn" data-ai="improve" type="button">Review and improve code</button>
+    <h3>Generate tests</h3><p class="note">Create pytest tests for edge cases based on the code you provide.</p><button class="btn alt" data-ai="tests" type="button">Generate pytest tests</button></div>
+  <div id="aiStatus" class="toast" role="status"></div><div class="card"><h3>AI output</h3><div id="aiOutput" class="txt aiOut mut">No output yet.</div><button class="btn alt" id="aiCopy" type="button" style="margin-top:10px">Copy AI output</button><button class="btn alt" id="aiUseCode" type="button" style="margin-top:10px">Use AI code as After code</button><button class="btn alt" id="aiUseTests" type="button" style="margin-top:10px">Use AI output as Proof tests</button></div>
+  <div class="card"><h3>Usage</h3><p id="aiUsage" class="mut" style="margin:0">AI usage is unavailable until the backend and provider are configured.</p></div>
+</section>
+
+<section class="tab" id="account">
+  <h1 id="accountTitle">अकाउंट और साइन-अप</h1>
+  <p class="mut" id="accountIntro">साइन-अप वैकल्पिक है। लोकल टूल अकाउंट के बिना भी चलेंगे।</p>
+  <div id="acMsg" class="toast" role="status"></div>
+  <div id="acNone" class="card"><h3>Sign-in is not set up yet</h3><p class="mut" style="margin:0">The site owner still needs to connect a login service. Until then nothing here can sign you in.</p></div>
+  <div id="acOut" hidden>
+    <button class="btn" id="gBtn" type="button">Continue with Google</button>
+    <p class="mut" style="text-align:center;margin:12px 0 4px">or use a one-time email code</p>
+    <label for="email" class="note">Email address</label>
+    <input class="inp" id="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com">
+    <button class="btn alt" id="sendOtp" type="button">Email me a code</button>
+    <div id="otpBox" hidden>
+      <label for="otp" class="note">Code from the email</label>
+      <input class="inp" id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Enter the code">
+      <button class="btn" id="verOtp" type="button">Verify code</button>
+      <button class="btn alt" id="resend" type="button" disabled>Resend code</button>
+    </div>
+  </div>
+  <div id="acIn" hidden>
+    <div class="card"><h3 id="acEmail"></h3><p class="mut" id="acPlan" style="margin:0"></p></div>
+    <button class="btn alt" id="acRef" type="button">Refresh plan status</button>
+    <button class="btn alt" id="accountExport" type="button">Export account data (.json)</button>
+    <button class="btn c-bad" id="accountDelete" type="button">Delete account and server data</button>
+    <p class="note">Account export includes server-held order, plan and AI-usage metadata. Account deletion is permanent and does not automatically refund a payment or erase records held by external providers.</p>
+    <button class="btn alt" id="outBtn" type="button">Sign out</button>
+  </div>
+  <div class="card"><h3>What leaves your device</h3><p class="mut" style="margin:0">Your email address goes to our login service (Supabase). If you use Google, Google shares your name and email with it. A sign-in token stays in this browser until you sign out. Your current code, tests and extracted PDF text draft are automatically saved in this browser’s local storage; AI outputs and test-run history are not included in autosave. Clear it from Code → Clear workspace. PDFs, code and tests stay on this device unless you explicitly use AI Lab, which sends the first 18,000 characters of current PDF text, or the code/tests entered, to the configured AI provider after consent. The app does not save AI input/output history by default. The Account tab can export app-held account metadata or delete the Supabase account and linked app rows after confirmation; it does not automatically refund payments or delete records retained by external providers. Libraries for PDF reading, Python, OCR and sign-in are downloaded from public CDNs.</p></div>
+  <div class="card"><h3>Help & diagnostics</h3><p class="mut">Download a small technical report if something breaks. It includes browser capabilities and app configuration status, but not your code, PDF text, email, tokens or API secrets.</p><button class="btn alt" id="downloadDiagnostics" type="button">Download privacy-safe diagnostic report</button><div id="diagMsg" class="toast" role="status"></div></div>
+  <div class="card"><h3>Policies (draft)</h3><p class="mut" style="margin:0"><a href="privacy.html">Privacy policy draft</a> · <a href="terms.html">Terms of use draft</a>. These drafts must be reviewed and completed before public launch.</p></div>
+</section>
+
+<section class="tab" id="plans">
+  <h1 id="plansTitle">प्लान और फ़ीचर</h1>
+  <p class="mut"><span class="lang-hi">कीमतें API, पेमेंट फीस और सपोर्ट के लिए सुरक्षित बजट मानकर निकाली गई शुरुआती कीमतें हैं। अभी कोई पेड प्लान बिक्री के लिए चालू नहीं है।</span><span class="lang-en">These are proposed prices based on conservative API, payment-fee and support budgets. Paid plans are not available for purchase yet.</span></p>
+  <div class="plans">
+    <div class="card"><span class="chip c-ok">Free</span><h2 style="margin-top:8px"><span class="lang-hi">मुफ़्त</span><span class="lang-en">Free</span></h2><p class="mut"><span class="lang-hi">शुरू करने और छोटे कामों के लिए</span><span class="lang-en">For getting started and small tasks</span></p><div class="priceLine"><strong>₹0</strong><span class="mut">/ <span class="lang-hi">माह</span><span class="lang-en">month</span></span></div>
+      <ul class="f"><li class="w">PDF टेक्स्ट निकालना — डिवाइस पर</li><li class="w">कोड के दो वर्ज़न की तुलना</li><li class="w">ब्राउज़र में Python/pytest टेस्ट</li><li class="p">AI: 3 अनुरोध/माह — AI सर्वर सेटअप के बाद</li><li class="p">स्कैन PDF OCR — सीमित पेज</li></ul><button class="btn alt" type="button" data-go="home"><span class="lang-hi">मुफ़्त टूल इस्तेमाल करें</span><span class="lang-en">Use free tools</span></button></div>
+    <div class="card planFuture"><span class="chip c-sug"><span class="lang-hi">प्रस्तावित · अभी बिक्री नहीं</span><span class="lang-en">Proposed · not for sale</span></span><h2 style="margin-top:8px">Pro</h2><p class="mut"><span class="lang-hi">नियमित व्यक्तिगत रिसर्च</span><span class="lang-en">For regular individual research</span></p><div class="priceLine"><strong>₹599</strong><span class="mut">/ <span class="lang-hi">माह*</span><span class="lang-en">month*</span></span></div>
+      <ul class="f"><li class="w">Free के सभी मौजूदा लोकल टूल</li><li class="p">AI के अधिकतम 50 अनुरोध/माह — प्रस्तावित</li><li class="p">डिवाइसों के बीच हिस्ट्री — अभी लागू नहीं</li><li class="p">अलग सुरक्षित सर्वर पर कोड चलाना — अभी लागू नहीं</li></ul><button class="btn alt" type="button" disabled><span class="lang-hi">फीचर सत्यापन के बाद खुलेगा</span><span class="lang-en">Opens after feature verification</span></button></div>
+    <div class="card planFuture"><span class="chip c-sug"><span class="lang-hi">प्रस्तावित · अभी बिक्री नहीं</span><span class="lang-en">Proposed · not for sale</span></span><h2 style="margin-top:8px">Ultra</h2><p class="mut"><span class="lang-hi">भारी/एडवांस्ड रिसर्च वर्कफ़्लो</span><span class="lang-en">For advanced research workflows</span></p><div class="priceLine"><strong>₹1,299</strong><span class="mut">/ <span class="lang-hi">माह*</span><span class="lang-en">month*</span></span></div>
+      <ul class="f"><li class="w">Free के सभी मौजूदा लोकल टूल</li><li class="p">AI के अधिकतम 200 अनुरोध/माह — प्रस्तावित</li><li class="p">GitHub PR export — अभी लागू नहीं</li><li class="p">टीम हिस्ट्री और बिलिंग — अभी लागू नहीं</li></ul><button class="btn alt" type="button" disabled><span class="lang-hi">फीचर सत्यापन के बाद खुलेगा</span><span class="lang-en">Opens after feature verification</span></button></div>
+  </div>
+  <div class="card"><h3><span class="lang-hi">कीमत का हिसाब</span><span class="lang-en">Pricing assumptions</span></h3><p class="mut"><span class="lang-hi">Pro ₹599 पर 18% GST को कीमत में शामिल मानकर, ₹90/USD, गेटवे शुल्क का 3% + उस पर GST, API बजट ₹150 और सपोर्ट/इन्फ्रा रिज़र्व ₹75 प्रति ग्राहक मानें तो अनुमानित योगदान लगभग ₹261/माह है। Ultra ₹1,299 पर API बजट ₹300 और सपोर्ट/इन्फ्रा रिज़र्व ₹150 मानने पर लगभग ₹605/माह है। ये आयकर, ग्राहक लाने की लागत, रिफंड/चार्जबैक और साझा फिक्स्ड खर्च से पहले के अनुमान हैं; गारंटी नहीं।</span><span class="lang-en">Assuming prices include 18% GST, ₹90/USD, gateway fee budget of 3% plus GST, monthly AI budget ₹150 (Pro) / ₹300 (Ultra), and support/infrastructure reserve ₹75 / ₹150, estimated contribution is about ₹261 / ₹605 per subscriber per month. This is before income tax, acquisition, refunds/chargebacks and shared fixed costs; not a guarantee.</span></p><p class="note"><span class="lang-hi">*API मॉडल और वास्तविक उपयोग तय होने पर कीमत फिर से जाँचनी होगी। अनुरोधों पर सीमा, इनपुट/आउटपुट टोकन सीमा और मासिक खर्च अलर्ट ज़रूरी हैं।</span><span class="lang-en">*Recalculate after selecting the actual API model and observing real usage. Per-request token caps, monthly quotas and spend alerts are required.</span></p></div>
+  <div class="card"><h3><span class="lang-hi">लॉन्च स्थिति</span><span class="lang-en">Launch status</span></h3><p class="mut"><span class="lang-hi">Pro/Ultra की बिक्री बंद है। पहले Supabase लॉगिन, AI प्रदाता, सही प्लान/क्वोटा, पेमेंट वेबहुक, रिफंड/कैंसिलेशन, नीति और असली टेस्ट पूरे करने होंगे।</span><span class="lang-en">Pro/Ultra checkout remains disabled. Supabase sign-in, AI provider, tier-specific quotas, payment webhooks, refund/cancellation policies and live end-to-end tests must be completed first.</span></p></div>
+  <div class="card" id="paymentMethodsCard"><span class="chip c-acc">एक ही पेमेंट सिस्टम</span><h3 style="margin-top:8px">Razorpay Checkout — सभी तरीके एक जगह</h3><p class="mut" style="margin:0 0 10px">ग्राहक एक ही सुरक्षित checkout खोलेंगे और वहाँ उपलब्ध तरीके चुनेंगे। हर UPI ऐप या बैंक के लिए अलग integration नहीं करना पड़ेगा।</p><div class="pillrow" aria-label="Checkout payment method categories"><span class="chip">UPI ऐप: Google Pay, PhonePe, Paytm, BHIM व अन्य समर्थित ऐप</span><span class="chip">UPI QR — जहाँ उपलब्ध हो</span><span class="chip">डेबिट और क्रेडिट कार्ड</span><span class="chip">नेट बैंकिंग</span><span class="chip">डिजिटल वॉलेट</span><span class="chip">EMI — पात्रता के अनुसार</span><span class="chip">Pay Later — अनुमति मिलने पर</span></div><p class="note" style="margin-bottom:0">हर तरीके की उपलब्धता Razorpay अकाउंट, मंज़ूरी, बैंक और ग्राहक की पात्रता पर निर्भर है। इस प्रीव्यू में कोई असली भुगतान स्वीकार नहीं होता।</p></div>
+  <div class="card"><h3><span class="lang-hi">खरीद की स्थिति</span><span class="lang-en">Checkout status</span></h3><p class="mut"><span class="lang-hi">अभी भुगतान बंद है। पहले सभी विज्ञापित सुविधाएँ और पेमेंट फ्लो असली टेस्ट मोड में पास होने चाहिए।</span><span class="lang-en">Payments are off. All advertised features and checkout flows must pass real test-mode verification first.</span></p><div id="buyBox"></div></div>
+</section>
+
+<section class="tab" id="launch">
+  <h1>लॉन्च कंट्रोल सेंटर</h1>
+  <p class="mut">यह चेकलिस्ट इसी वेबसाइट में सेव होगी। टिक लगाने का अर्थ केवल इतना है कि आपने काम पूरा होने की पुष्टि की है—यह अपने आप सर्वर या पेमेंट कॉन्फ़िगर नहीं करता।</p>
+  <div class="card"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><div><h3>लॉन्च प्रगति</h3><p class="mut" id="launchSummary" style="margin:4px 0 0">0 काम पूरे</p></div><strong id="launchPercent" style="font-size:26px">0%</strong></div><div style="height:10px;background:var(--sugBg);border-radius:99px;overflow:hidden;margin-top:12px"><div id="launchBar" style="height:100%;width:0%;background:var(--ok);transition:width .15s"></div></div></div>
+  <div class="banner"><b>सुरक्षा:</b> यहाँ कभी भी पासवर्ड, Supabase service-role key, Razorpay secret या AI API key पेस्ट न करें। सीक्रेट केवल संबंधित सेवा के सुरक्षित Environment Variables में डालें।</div>
+  <div class="card"><h3>1. होस्टिंग और GitHub</h3><label class="consent"><input type="checkbox" data-launch="hosting"> सार्वजनिक साइट डिप्लॉय की और मोबाइल से जाँची</label><label class="consent"><input type="checkbox" data-launch="github"> सही GitHub रिपॉज़िटरी और प्रोडक्शन ब्रांच तय की</label><label class="consent"><input type="checkbox" data-launch="demooff"> प्रोडक्शन में डेमो मोड बंद किया</label></div>
+  <div class="card"><h3>2. लॉगिन और डेटाबेस</h3><label class="consent"><input type="checkbox" data-launch="supabase"> Supabase URL और public anon key सेट की</label><label class="consent"><input type="checkbox" data-launch="auth"> ईमेल OTP/Google लॉगिन, redirect URL और session टेस्ट किए</label><label class="consent"><input type="checkbox" data-launch="rls"> SQL schema और Row Level Security (RLS) जाँची</label><label class="consent"><input type="checkbox" data-launch="history"> यूज़र-विशिष्ट हिस्ट्री/बैकअप/डिलीट व्यवहार जाँचा</label></div>
+  <div class="card"><h3>3. AI और PDF</h3><label class="consent"><input type="checkbox" data-launch="aikey"> AI provider/model और server-side API key सेट की</label><label class="consent"><input type="checkbox" data-launch="aiflow"> वास्तविक PDF से AI summary, explanation और code/test generation जाँचा</label><label class="consent"><input type="checkbox" data-launch="quota"> Free 3, Pro 50 और Ultra 200 AI अनुरोध/माह की सर्वर-साइड लिमिट सत्यापित की</label><label class="consent"><input type="checkbox" data-launch="pdfedge"> खराब, स्कैन, खाली और बड़ी PDF के error cases जाँचे</label></div>
+  <div class="card"><h3>4. सुरक्षित कोड रनिंग</h3><label class="consent"><input type="checkbox" data-launch="sandbox"> अलग, सीमित और सुरक्षित server-side sandbox लागू किया</label><label class="consent"><input type="checkbox" data-launch="limits"> CPU, RAM, समय, नेटवर्क और फ़ाइल सिस्टम की सीमाएँ जाँचीं</label><label class="consent"><input type="checkbox" data-launch="runtime"> Python tests और वास्तविक user code से end-to-end रन जाँचा</label></div>
+  <div class="card"><h3>5. पेमेंट और प्लान</h3><label class="consent"><input type="checkbox" data-launch="rzptest"> Razorpay test keys और backend order/verify flow सेट किया</label><label class="consent"><input type="checkbox" data-launch="webhooks"> payment webhook/signature और duplicate-event सुरक्षा जाँची</label><label class="consent"><input type="checkbox" data-launch="plansquota"> Free/Pro/Ultra plan entitlement और सही quota सर्वर पर लागू किया</label><label class="consent"><input type="checkbox" data-launch="refund"> renewal, cancellation, refund और failed payment व्यवहार तय/जाँचा</label><label class="consent"><input type="checkbox" data-launch="livepay"> सभी टेस्ट पास होने के बाद ही live payments सक्षम किए</label></div>
+  <div class="card"><h3>6. सुरक्षा, नीति और गुणवत्ता</h3><label class="consent"><input type="checkbox" data-launch="secrets"> secret scan, API खर्च सीमा और rate limiting जाँची</label><label class="consent"><input type="checkbox" data-launch="policy"> Privacy Policy और Terms को सही व्यवसाय विवरण के साथ पूरा/रिव्यू किया</label><label class="consent"><input type="checkbox" data-launch="mobile"> Android Chrome पर मोबाइल end-to-end टेस्ट किया</label><label class="consent"><input type="checkbox" data-launch="errors"> logs, alerts, error states और backup/restore जाँचे</label><label class="consent"><input type="checkbox" data-launch="export"> project export/GitHub features (अगर लॉन्च में शामिल हैं) टेस्ट किए</label></div>
+  <div class="card"><h3>जो मालिक को सुरक्षित तरीके से देना/सेट करना होगा</h3><p class="mut">1) GitHub पर इस प्रोजेक्ट की रिपॉज़िटरी/ब्रांच; 2) Render workspace/service चुनने की पुष्टि; 3) Supabase project URL और public anon key; 4) AI provider चुनना और उसकी key अपने server Environment Variables में डालना; 5) Razorpay account की test keys और बाद में live approval; 6) domain खरीद/कनेक्ट करना, यदि custom domain चाहिए। पासवर्ड या secret keys चैट में न भेजें।</p><p class="note">मैं कोड, schema, config templates, test scripts और deployment steps तैयार कर सकता हूँ। जुड़े खातों में डिप्लॉय/बदलाव करने से पहले सही repo/workspace और आपकी स्पष्ट पुष्टि चाहिए।</p></div>
+  <div class="card"><button class="btn" id="launchExport" type="button">चेकलिस्ट डाउनलोड करें (.json)</button> <button class="btn alt" id="launchReset" type="button">सभी टिक रीसेट करें</button><p id="launchMsg" class="toast" role="status"></p></div>
+</section>
+</div>
+<nav id="nav" aria-label="Main"></nav>
+
+<script>
+/*LOGIC-START*/
+function norm(s){return String(s).replace(/\r\n?/g,"\n")}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function diffRows(a,b){
+  a=norm(a).split("\n");b=norm(b).split("\n");
+  if(a.length>1500||b.length>1500)throw new Error("Each side can have at most 1,500 lines.");
+  var n=a.length,m=b.length,L=[],i,j;
+  for(i=0;i<=n;i++)L.push(new Int32Array(m+1));
+  for(i=n-1;i>=0;i--)for(j=m-1;j>=0;j--)L[i][j]=a[i]===b[j]?L[i+1][j+1]+1:Math.max(L[i+1][j],L[i][j+1]);
+  var raw=[];i=0;j=0;
+  while(i<n&&j<m){if(a[i]===b[j]){raw.push([" ",a[i]]);i++;j++}else if(L[i+1][j]>=L[i][j+1])raw.push(["-",a[i++]]);else raw.push(["+",b[j++]])}
+  while(i<n)raw.push(["-",a[i++]]);
+  while(j<m)raw.push(["+",b[j++]]);
+  var rows=[],add=0,del=0,mod=0,k=0,x;
+  while(k<raw.length){
+    if(raw[k][0]===" "){rows.push(raw[k++]);continue}
+    var d=[],p=[];
+    while(k<raw.length&&raw[k][0]!==" "){(raw[k][0]==="-"?d:p).push(raw[k][1]);k++}
+    var q=Math.min(d.length,p.length);
+    for(x=0;x<q;x++){rows.push(["~-",d[x]]);rows.push(["~+",p[x]]);mod++}
+    for(x=q;x<d.length;x++){rows.push(["-",d[x]]);del++}
+    for(x=q;x<p.length;x++){rows.push(["+",p[x]]);add++}
+  }
+  return{rows:rows,added:add,removed:del,modified:mod};
+}
+function uniq(a){return a.filter(function(v,i){return a.indexOf(v)===i})}
+function analyzeText(t){
+  var heads=[],seen={};
+  t.split("\n").forEach(function(l){
+    var s=l.trim();
+    if(s.length<70&&/^(?:\d+(?:\.\d+)*\.?\s+|[IVX]+\.\s+)?(abstract|introduction|related work|background|method(?:s|ology)?|approach|algorithm(?!\s+\d)|experiments?|results|discussion|conclusions?)\b/i.test(s)&&!seen[s.toLowerCase()]){seen[s.toLowerCase()]=1;heads.push(s)}
+  });
+  var algos=uniq((t.match(/Algorithm\s+\d+/gi)||[]).map(function(s){return s.replace(/\s+/," ")}));
+  var eqs=uniq(t.match(/\(\d{1,2}(?:\.\d+)?\)\s*$/gm)||[]);
+  return{headings:heads.slice(0,20),algorithms:algos,equations:eqs.length};
+}
+function classify(code,out){
+  var c=function(w){var m=new RegExp("(\\d+) "+w).exec(out);return m?+m[1]:0};
+  return{status:code===0?"passed":code===1?"failed":code===5?"no tests found":"error",counts:{passed:c("passed"),failed:c("failed"),errors:c("errors?")}};
+}
+function isSecretKey(k){k=String(k||"");if(/^sb_secret_/.test(k))return true;try{var p=JSON.parse(atob(k.split(".")[1].replace(/-/g,"+").replace(/_/g,"/")));return p.role==="service_role"}catch(e){return false}}
+function friendlyAuthError(m){m=String(m||"").toLowerCase();
+  if(/expired|invalid/.test(m)&&/token|otp|code/.test(m))return"That code is wrong or has expired. Request a new code.";
+  if(/rate limit|seconds|too many/.test(m))return"Too many requests. Please wait a minute and try again.";
+  if(/failed to fetch|network|load failed/.test(m))return"No connection. Check your internet and try again.";
+  if(/provider/.test(m)&&/(not|disabled|unsupported)/.test(m))return"This sign-in method is not turned on yet.";
+  return"Something went wrong. Please try again."}
+/*LOGIC-END*/
+
+var EX_BEFORE=`def detect(data, window=20, k=3):
+    flags = []
+    for i in range(len(data)):
+        w = data[max(0, i - window):i]
+        if len(w) < 2:
+            flags.append(False)
+            continue
+        m = sum(w) / len(w)
+        v = sum((x - m) ** 2 for x in w) / len(w)
+        flags.append(abs(data[i] - m) > k * v ** 0.5)
+    return flags`;
+var EX_AFTER=`import math
+
+
+def detect_ewma(data, alpha=0.1, k=3.0, warmup=5):
+    """Flag points far from an exponentially weighted mean."""
+    if not 0 < alpha <= 1:
+        raise ValueError("alpha must be in (0, 1]")
+    mean = var = None
+    flags = []
+    for i, x in enumerate(data):
+        if mean is None:
+            mean, var = x, 0.0
+            flags.append(False)
+            continue
+        std = math.sqrt(var)
+        flags.append(i >= warmup and abs(x - mean) > k * std)
+        diff = x - mean
+        mean += alpha * diff
+        var = (1 - alpha) * (var + alpha * diff * diff)
+    return flags`;
+var EX_TESTS=`import pytest
+from solution import detect_ewma
+
+
+def test_constant_series_no_flags():
+    assert not any(detect_ewma([5.0] * 50))
+
+
+def test_spike_is_flagged():
+    data = [1.0, 1.1, 0.9] * 10 + [50.0]
+    assert detect_ewma(data)[-1] is True
+
+
+def test_bad_alpha_rejected():
+    with pytest.raises(ValueError):
+        detect_ewma([1, 2, 3], alpha=1.5)
+
+
+def test_empty_input():
+    assert detect_ewma([]) == []
+
+
+def test_output_length_matches():
+    assert len(detect_ewma([1.0, 2.0, 3.0])) == 3`;
+var PDFJS="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",PDFW="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+var PYBASE="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
+var MAXB=15*1048576,MAXP=100,RUN_LIMIT_MS=15000,LOAD_LIMIT_MS=90000;
+var $=function(id){return document.getElementById(id)};
+var pdfText="",runs=[],worker=null,workerUrl=null,running=false,ocrActive=false,pdfLoadId=0,target="after",cmpMode="diff",currentPdf=null;
+
+/* Local-first preferences and draft recovery. No cloud sync is implied. */
+var SAVE_KEY="rtc_workspace_draft_v1",THEME_KEY="rtc_theme_v1",saveTimer=null,draftCleared=false;
+function applyTheme(theme){if(document.documentElement){if(theme==="light"||theme==="dark")document.documentElement.setAttribute("data-theme",theme);else document.documentElement.removeAttribute("data-theme")}var b=$("themeToggle");if(b){b.textContent=theme==="dark"?"☀ लाइट":theme==="light"?"☾ डार्क":"◐ थीम";b.setAttribute("aria-label",theme==="dark"?"लाइट थीम करें":theme==="light"?"डार्क थीम करें":"थीम बदलें")}try{localStorage.setItem(THEME_KEY,theme)}catch(e){}}
+function getTheme(){try{return localStorage.getItem(THEME_KEY)||"system"}catch(e){return"system"}}
+function saveDraft(){if(draftCleared)return;try{var p={version:1,savedAt:new Date().toISOString(),before:$("before").value.slice(0,100000),after:$("after").value.slice(0,100000),tests:$("tests").value.slice(0,50000),pdfText:pdfText.slice(0,100000)};var raw=JSON.stringify(p);if(raw.length>450000){$("saveBadge").textContent="Draft autosave: too large";return}localStorage.setItem(SAVE_KEY,raw);$("saveBadge").textContent="Draft saved on this device"}catch(e){if($("saveBadge"))$("saveBadge").textContent="Draft autosave unavailable"}}
+function scheduleSave(){draftCleared=false;clearTimeout(saveTimer);if($("saveBadge"))$("saveBadge").textContent="Saving draft…";saveTimer=setTimeout(saveDraft,350)}
+function restoreDraft(){
+  try{
+    var raw=localStorage.getItem(SAVE_KEY);if(!raw)return;
+    var p=JSON.parse(raw);
+    if(!p||p.version!==1||typeof p.before!=="string"||typeof p.after!=="string"||typeof p.tests!=="string")return;
+    $("before").value=p.before.slice(0,100000);$("after").value=p.after.slice(0,100000);$("tests").value=p.tests.slice(0,50000);
+    pdfText=typeof p.pdfText==="string"?p.pdfText.slice(0,100000):"";
+    if(pdfText){
+      var a=analyzeText(pdfText);$("pdfOut").hidden=false;$("sPages").textContent="—";$("sChars").textContent=pdfText.length.toLocaleString("en-IN");
+      $("heads").innerHTML=a.headings.length?a.headings.map(function(h){return '<li class="w">'+esc(h)+"</li>"}).join(""):'<li class="p">No standard headings found</li>';
+      $("algos").textContent=(a.algorithms.length?"Mentions: "+a.algorithms.join(", ")+". ":"No “Algorithm n” labels found. ")+"About "+a.equations+" numbered equations (rough count).";
+      $("prev").textContent=pdfText.slice(0,3000)+(pdfText.length>3000?"\n\n[Preview ends.]":"");
+      pdfMsg("Recovered local draft text. The original PDF file is not stored in the draft.");
+    }
+    renderRuns();refreshProof();$("saveBadge").textContent="Recovered local draft";
+  }catch(e){try{localStorage.removeItem(SAVE_KEY)}catch(_){}if($("saveBadge"))$("saveBadge").textContent="Draft recovery unavailable"}
+}
+$("themeToggle").onclick=function(){var t=getTheme();if(t!=="dark"&&t!=="light")t=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";applyTheme(t==="dark"?"light":"dark")};
+applyTheme(getTheme());
+
+
+/* navigation */
+var ICONS={home:"M3 10.5 12 3l9 7.5 M5 9v11h14V9 M9 20v-6h6v6",ai:"M12 3v3 M12 18v3 M3 12h3 M18 12h3 M5.6 5.6l2.1 2.1 M16.3 16.3l2.1 2.1 M18.4 5.6l-2.1 2.1 M7.7 16.3l-2.1 2.1 M9 9h6v6H9z",paper:"M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z M14 3v5h5 M9 13h6 M9 17h6",code:"M16 18l6-6-6-6 M8 6l-6 6 6 6",result:"M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11",proof:"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",plans:"M12 2l9 5-9 5-9-5z M3 12l9 5 9-5 M3 17l9 5 9-5",launch:"M4 19h16 M6 16V9 M12 16V5 M18 16v-4"};
+var NAMES={home:"होम",paper:"PDF",code:"कोड",proof:"टेस्ट",launch:"लॉन्च"};
+var NAV_EN={home:"Home",paper:"PDF",code:"Code",proof:"Tests",launch:"Launch"};
+var nav=$("nav"),currentPage="home",currentLang="hi";
+function renderNav(){
+  nav.innerHTML="";
+  Object.keys(NAMES).forEach(function(k){
+    var b=document.createElement("button");b.type="button";b.dataset.t=k;
+    b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+ICONS[k]+'"/></svg><span>'+esc(currentLang==="en"?NAV_EN[k]:NAMES[k])+'</span>';
+    b.addEventListener("click",function(){go(k)});nav.appendChild(b);
+  });
+}
+renderNav();
+var UI_TEXT={
+  hi:{gateBrandSub:"रिसर्च से कोड तक",gateLanguageLabel:"भाषा / Language",gateEyebrow:"आपका सुरक्षित वर्कस्पेस",gateTitle:"पहले साइन इन करें",gateDescription:"अपने अकाउंट से प्रवेश करें। प्रवेश के बाद ऊपर से हिंदी या English चुन सकते हैं।",gateEmailLabel:"ईमेल पता",gateSendOtp:"ईमेल पर साइन-इन कोड भेजें",gateOtpLabel:"ईमेल में मिला कोड",gateVerifyOtp:"कोड जाँचकर प्रवेश करें",gateOr:"या",gateGoogle:"Google से जारी रखें",gateDemo:"डेमो में प्रवेश करें",gateFine:"डेमो मोड में असली अकाउंट नहीं बनेगा और कोई भुगतान नहीं होगा। साइन-इन/AI/पेमेंट सर्वर कॉन्फ़िगरेशन के बिना उपलब्ध नहीं हैं।",gateOpenHint:"अगर बटन काम न करें, इस HTML को डाउनलोड करके Chrome में खोलें—फ़ाइल प्रीव्यू/रीडर में नहीं।",brandSub:"पेपर पढ़ें · कोड जाँचें · टेस्ट चलाएँ",heroEyebrow:"आपका रिसर्च वर्कस्पेस",heroTitle:"रिसर्च से कोड तक — एक आसान जगह पर।",heroLead:"PDF पढ़ें, कोड में बदलाव देखें और Python टेस्ट चलाएँ। शुरुआत करने के लिए नीचे कोई काम चुनें।",localChip:"● आपके डिवाइस पर काम",homeTitle:"आज क्या करना है?",homeLead:"एक बटन दबाएँ — बाकी स्टेप्स यहीं मिलेंगे।",homeFreeChip:"शुरुआत मुफ़्त",quickPaperTitle:"PDF पढ़ें",quickPaperSub:"पेपर से टेक्स्ट निकालें",quickCodeTitle:"कोड जाँचें",quickCodeSub:"दो वर्ज़न की तुलना करें",quickTestTitle:"टेस्ट चलाएँ",quickTestSub:"ब्राउज़र में Python / pytest",quickAiTitle:"AI मदद",quickAiSub:"सर्वर सेटअप होने पर उपलब्ध",planEyebrow:"प्लान चुनें",planHeading:"Free, Pro और Ultra",planLead:"Pro और Ultra की प्रस्तावित कीमतें दिखेंगी; फीचर/पेमेंट लाइव होने तक खरीद बंद है।",planCompare:"तुलना देखें ›",accountPreviewTitle:"अपना अकाउंट जोड़ें",accountPreviewNote:"अभी लाइव साइन-अप सेट नहीं है। बिना अकाउंट भी लोकल टूल इस्तेमाल कर सकते हैं।",accountPreviewButton:"साइन-अप स्थिति देखें",homeTip:"टिप: आपकी कोड ड्राफ्ट इसी डिवाइस पर सेव होती है। AI बटन दबाने से पहले डेटा-शेयरिंग नोटिस पढ़ें।",paperTitle:"PDF पेपर पढ़ें",paperIntro:"अपने फोन से PDF चुनें। टेक्स्ट इसी डिवाइस पर निकलेगा।",choosePdfLabel:"＋ PDF चुनें",codeTitle:"कोड जाँचें",codeIntro:"पुराना और नया कोड डालें, फिर तुलना करें।",proofTitle:"टेस्ट चलाएँ",proofIntro:"टेस्ट सच में चलेंगे; रिज़ल्ट रन पूरा होने पर दिखेगा।",aiTitle:"AI मदद",accountTitle:"अकाउंट और साइन-अप",accountIntro:"साइन-अप वैकल्पिक है। लोकल टूल अकाउंट के बिना भी चलेंगे।",plansTitle:"प्लान और फ़ीचर",previewModeBanner:"<b>डेमो मोड:</b> कोई असली अकाउंट नहीं बना है। PDF, कोड तुलना और टेस्ट आपके इस डिवाइस पर चलते हैं; AI और भुगतान चालू नहीं हैं।",mainBanner:'<b>ज़रूरी सूचना:</b> PDF पढ़ना, कोड तुलना और टेस्ट आपके ब्राउज़र में चलते हैं। AI, असली साइन-अप और पेमेंट तभी चलेंगे जब सर्वर सेटअप हो। अभी इस प्रीव्यू में वे चालू नहीं हैं।'},
+  en:{gateBrandSub:"From research to code",gateLanguageLabel:"Language / भाषा",gateEyebrow:"YOUR PRIVATE WORKSPACE",gateTitle:"Sign in to continue",gateDescription:"Sign in to your account. After entering, switch between Hindi and English from the top of the screen.",gateEmailLabel:"Email address",gateSendOtp:"Send sign-in code by email",gateOtpLabel:"Code from your email",gateVerifyOtp:"Verify code and continue",gateOr:"OR",gateGoogle:"Continue with Google",gateDemo:"Continue in demo mode",gateFine:"Demo mode does not create an account or take payments. Sign-in, AI and payments need server configuration.",gateOpenHint:"If taps do not respond, download this HTML and open it in Chrome—not a file preview or reader.",brandSub:"Read papers · compare code · run tests",heroEyebrow:"YOUR RESEARCH WORKSPACE",heroTitle:"From research to code — all in one place.",heroLead:"Read PDFs, compare code changes and run Python tests. Pick a task below to get started.",localChip:"● Works on this device",homeTitle:"What would you like to do?",homeLead:"Tap once — common steps stay here.",homeFreeChip:"Free to start",quickPaperTitle:"Read a PDF",quickPaperSub:"Extract paper text",quickCodeTitle:"Check code",quickCodeSub:"Compare two versions",quickTestTitle:"Run tests",quickTestSub:"Python / pytest in browser",quickAiTitle:"AI assistant",quickAiSub:"Available after server setup",planEyebrow:"CHOOSE A PLAN",planHeading:"Free, Pro and Ultra",planLead:"Pro and Ultra prices are estimates; checkout stays disabled until features and billing are verified.",planCompare:"Compare plans ›",accountPreviewTitle:"Connect your account",accountPreviewNote:"Live sign-up is not configured yet. Local tools can run without an account in preview mode.",accountPreviewButton:"Check sign-in status",homeTip:"Tip: code drafts are saved on this device. Read the data-sharing notice before using AI.",paperTitle:"Read a PDF paper",paperIntro:"Choose a PDF from your phone. Text is extracted on this device.",choosePdfLabel:"＋ Choose PDF",codeTitle:"Check code",codeIntro:"Enter old and new code, then compare them.",proofTitle:"Run tests",proofIntro:"Tests really execute; results appear when the run finishes.",aiTitle:"AI assistant",accountTitle:"Account and sign-in",accountIntro:"Sign-in is optional for local tools in preview mode.",plansTitle:"Plans and features",previewModeBanner:"<b>Demo mode:</b> No real account was created. PDF reading, code comparison and tests run on this device; AI and payments are disabled.",mainBanner:'<b>Important:</b> PDF reading, code comparison and tests run in your browser. AI, real sign-in and payments require server setup and are not active in this preview.'}
+};
+function tr(id){return (UI_TEXT[currentLang]||UI_TEXT.hi)[id]||UI_TEXT.hi[id]||id}
+function applyLanguage(lang){
+  currentLang=lang==="en"?"en":"hi";
+  try{localStorage.setItem("rtc_language_v1",currentLang)}catch(e){}
+  if(document.documentElement)document.documentElement.lang=currentLang;
+  ["gateLanguage","languageToggle"].forEach(function(id){var el=$(id);if(el)el.value=currentLang});
+  Object.keys(UI_TEXT[currentLang]).forEach(function(id){var el=$(id);if(!el)return;if(id==="mainBanner"||id==="previewModeBanner"){el.innerHTML=tr(id);return}if(el=== $("gateLanguageLabel")||id==="gateLanguageLabel")return;if(el=== $("planLead")){};el.textContent=tr(id)});
+  // Keep status labels truthful and adjust theme/account labels without erasing icons.
+  var theme=$("themeToggle"),th=getTheme();if(theme){theme.textContent=currentLang==="en"?(th==="dark"?"☀ Light":th==="light"?"☾ Dark":"◐ Theme"):(th==="dark"?"☀ लाइट":th==="light"?"☾ डार्क":"◐ थीम")}
+  var act=$("acBtn");if(act)act.textContent=session?(currentLang==="en"?"Account":"अकाउंट"):(currentLang==="en"?"Sign in":"साइन इन");
+  NAMES=currentLang==="en"?NAV_EN:{home:"होम",paper:"PDF",code:"कोड",proof:"टेस्ट",launch:"लॉन्च"};renderNav();
+  var active=document.querySelector?document.querySelector(".tab.on"):null;if(active)nav.querySelectorAll("button").forEach(function(b){if(b.dataset.t===active.id)b.setAttribute("aria-current","page")});
+}
+function go(id){
+  currentPage=id;
+  document.querySelectorAll(".tab").forEach(function(s){s.classList.toggle("on",s.id===id)});
+  nav.querySelectorAll("button").forEach(function(b){if(b.dataset.t===id)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+  if(id==="result")renderCompare();
+  if(id==="proof")refreshProof();
+  if(id==="account")renderAccount();
+  if(id==="ai")refreshAIStatus();
+  if(id==="plans")renderPlans();
+  window.scrollTo({top:0,behavior:"auto"});
+}
+function routeDataGo(e){
+  var b=e.target&&e.target.closest?e.target.closest("[data-go]"):null;
+  if(!b)return;
+  if(b.disabled)return;
+  if(e.preventDefault)e.preventDefault();go(b.getAttribute("data-go"));
+}
+if(document.addEventListener)document.addEventListener("click",routeDataGo);
+else document.querySelectorAll("[data-go]").forEach(function(b){b.onclick=function(e){routeDataGo({target:b,preventDefault:function(){}})}});
+/* Launch checklist: local-only completion markers; never stores credentials. */
+(function(){
+  var key="rtc_launch_checklist_v1", boxes=Array.prototype.slice.call(document.querySelectorAll("[data-launch]"));
+  function read(){try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(_){return {}}}
+  function update(){var done=boxes.filter(function(b){return b.checked}).length,total=boxes.length,pct=total?Math.round(done*100/total):0;$ ("launchSummary").textContent=done+" / "+total+" काम पूरे";$ ("launchPercent").textContent=pct+"%";$ ("launchBar").style.width=pct+"%";}
+  var state=read();boxes.forEach(function(b){b.checked=state[b.dataset.launch]===true;b.addEventListener("change",function(){var s=read();s[b.dataset.launch]=b.checked;try{localStorage.setItem(key,JSON.stringify(s))}catch(_){}update()})});update();
+  var ex=$("launchExport");if(ex)ex.addEventListener("click",function(){var out={product:"Research to Code",exported_at:new Date().toISOString(),notice:"Checklist only; checked items are user-confirmed and are not proof of deployment.",items:boxes.map(function(b){return{id:b.dataset.launch,label:b.parentElement.textContent.trim(),done:b.checked}})};var blob=new Blob([JSON.stringify(out,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="research-to-code-launch-checklist.json";a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000);$("launchMsg").textContent="Checklist डाउनलोड हो गई।"});
+  var reset=$("launchReset");if(reset)reset.addEventListener("click",function(){if(!confirm("सभी checklist ticks हटाने हैं?"))return;boxes.forEach(function(b){b.checked=false});try{localStorage.removeItem(key)}catch(_){}update();$("launchMsg").textContent="Checklist रीसेट हो गई।"});
+})();
+
+function copyText(t,msgEl){
+  try{navigator.clipboard.writeText(t).then(function(){msgEl.textContent="Copied."},function(){msgEl.textContent="Could not copy. Touch and hold the text to select it."})}
+  catch(e){msgEl.textContent="Could not copy. Touch and hold the text to select it."}
+}
+
+/* PDF reading */
+var scriptLoads=Object.create(null);
+function loadScript(src,what){
+  what=what||"PDF reader";if(scriptLoads[src])return scriptLoads[src];
+  var promise=new Promise(function(res,rej){var s=document.createElement("script"),settled=false,to=setTimeout(function(){if(settled)return;settled=true;s.remove();rej(new Error("The "+what+" download timed out. Check your internet connection and try again."))},45000);s.src=src;s.onload=function(){if(settled)return;settled=true;clearTimeout(to);res()};s.onerror=function(){if(settled)return;settled=true;clearTimeout(to);s.remove();rej(new Error("Could not download the "+what+" from "+src.split("/")[2]+". Check your internet connection and try again."))};document.head.appendChild(s)});
+  scriptLoads[src]=promise;promise.catch(function(){delete scriptLoads[src]});return promise;
+}
+async function readPdf(file,onProg,isCurrent){
+  if(file.size>MAXB)throw new Error("This file is larger than 15 MB. Choose a smaller PDF.");
+  var head=new Uint8Array(await file.slice(0,5).arrayBuffer());
+  if(String.fromCharCode.apply(null,head)!=="%PDF-")throw new Error("This file is not a valid PDF.");
+  if(!window.pdfjsLib){await loadScript(PDFJS);pdfjsLib.GlobalWorkerOptions.workerSrc=PDFW}
+  var doc=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
+  var n=Math.min(doc.numPages,MAXP),parts=[];
+  for(var p=1;p<=n;p++){
+    if(isCurrent&&!isCurrent()){try{await doc.destroy()}catch(_){};throw new Error("PDF reading cancelled because another file was selected.")}
+    onProg(p,n);
+    var pg=await doc.getPage(p),tc=await pg.getTextContent();
+    parts.push(tc.items.map(function(it){return it.str+(it.hasEOL?"\n":"")}).join(""));
+    if(isCurrent&&!isCurrent()){try{await doc.destroy()}catch(_){};throw new Error("PDF reading cancelled because another file was selected.")}
+    await new Promise(function(r){setTimeout(r,0)});
+  }
+  return{text:parts.join("\n\n").replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim(),pages:n,total:doc.numPages,doc:doc};
+}
+function pdfMsg(t){var m=$("pdfMsg");m.hidden=!t;m.textContent=t||""}
+$("pdf").onchange=async function(e){
+  var f=e.target.files[0];e.target.value="";if(!f)return;
+  var loadId=++pdfLoadId;
+  if(currentPdf&&typeof currentPdf.destroy==="function"){try{currentPdf.destroy()}catch(_){}}
+  currentPdf=null;
+  $("pdfOut").hidden=true;$("ocrBtn").hidden=true;currentPdf=null;pdfText="";pdfMsg("Opening "+f.name+"...");scheduleSave();
+  try{
+    var r=await readPdf(f,function(p,n){if(loadId===pdfLoadId)pdfMsg("Reading page "+p+" of "+n+"...")},function(){return loadId===pdfLoadId});
+    if(loadId!==pdfLoadId){try{await r.doc.destroy()}catch(_){};return}
+    currentPdf=r.doc;
+    if(r.text.length<50){pdfMsg("Almost no text was found. This may be a scanned PDF. Try local OCR (up to 5 pages). The page images are processed in this browser.");$("ocrBtn").hidden=false;return}
+    $("ocrBtn").hidden=true;
+    pdfText=r.text;var a=analyzeText(r.text);
+    pdfMsg(r.total>r.pages?"Only the first "+r.pages+" of "+r.total+" pages were read.":"");
+    $("sPages").textContent=r.pages;$("sChars").textContent=r.text.length.toLocaleString("en-IN");
+    $("heads").innerHTML=a.headings.length?a.headings.map(function(h){return'<li class="w">'+esc(h)+"</li>"}).join(""):'<li class="p">No standard headings found</li>';
+    $("algos").textContent=(a.algorithms.length?"Mentions: "+a.algorithms.join(", ")+". ":"No “Algorithm n” labels found. ")+"About "+a.equations+" numbered equations (rough count).";
+    $("prev").textContent=r.text.slice(0,3000)+(r.text.length>3000?"\n\n[Preview ends. Use Copy all text for the rest.]":"");
+    $("pdfOut").hidden=false;scheduleSave();
+  }catch(err){
+    if(loadId===pdfLoadId)pdfMsg(err&&err.name==="PasswordException"?"This PDF is password protected. Remove the password and try again.":"Could not read this PDF. "+(err&&err.message?err.message:""));
+  }
+};
+async function runLocalOCR(){
+  if(!currentPdf||ocrActive)return;var doc=currentPdf,ocrId=pdfLoadId,b=$("ocrBtn");b.disabled=true;ocrActive=true;pdfMsg("Loading OCR engine…");
+  var ocrWorker=null;
+  try{
+    if(!window.Tesseract)await loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js","OCR engine");
+    ocrWorker=await Tesseract.createWorker("eng",1,{logger:function(m){if(m.status&&m.progress!=null)pdfMsg("OCR: "+m.status+" "+Math.round(m.progress*100)+"%")}});
+    var out=[],n=Math.min(doc.numPages,5);
+    for(var p=1;p<=n;p++){if(ocrId!==pdfLoadId)return;pdfMsg("OCR reading page "+p+" of "+n+"…");var pg=await doc.getPage(p);if(ocrId!==pdfLoadId)return;var base=pg.getViewport({scale:1}),scale=Math.min(1.15,1800/Math.max(base.width,base.height),Math.sqrt(12000000/(base.width*base.height)));if(!Number.isFinite(scale)||scale<=0)throw new Error("This PDF page has invalid dimensions.");var vp=pg.getViewport({scale:scale}),canvas=document.createElement("canvas");canvas.width=Math.ceil(vp.width);canvas.height=Math.ceil(vp.height);if(canvas.width*canvas.height>12000000)throw new Error("This page is too large for safe local OCR.");var cx=canvas.getContext("2d");if(!cx)throw new Error("Canvas is unavailable in this browser.");await pg.render({canvasContext:cx,viewport:vp}).promise;if(ocrId!==pdfLoadId)return;var rr=await ocrWorker.recognize(canvas);if(ocrId!==pdfLoadId)return;out.push(rr.data.text||"");canvas.width=canvas.height=1;await new Promise(function(r){setTimeout(r,0)})}
+    await ocrWorker.terminate();ocrWorker=null;if(ocrId!==pdfLoadId)return;pdfText=out.join("\n\n").trim();if(pdfText.length<20)throw new Error("OCR found too little readable text.");var a=analyzeText(pdfText);$("sPages").textContent=n;$("sChars").textContent=pdfText.length.toLocaleString("en-IN");$("heads").innerHTML=a.headings.length?a.headings.map(function(h){return'<li class="w">'+esc(h)+"</li>"}).join(""):'<li class="p">No standard headings found</li>';$("algos").textContent=(a.algorithms.length?"Mentions: "+a.algorithms.join(", ")+". ":"No “Algorithm n” labels found. ")+"About "+a.equations+" numbered equations (rough count).";$("prev").textContent=pdfText.slice(0,3000)+(pdfText.length>3000?"\n\n[Preview ends.]":"");$("pdfOut").hidden=false;$("ocrBtn").hidden=true;pdfMsg("OCR finished in this browser for "+n+" pages. Verify the extracted text; OCR can make mistakes.");scheduleSave();
+  }catch(e){pdfMsg("OCR failed: "+(e&&e.message?e.message:"try again"))}finally{if(ocrWorker){try{await ocrWorker.terminate()}catch(_){}}b.disabled=false;ocrActive=false}
+}
+$("ocrBtn").onclick=runLocalOCR;
+$("copyTxt").onclick=function(){copyText(pdfText,$("txtMsg"))};
+
+/* code and compare */
+$("ex").onclick=function(){$("before").value=EX_BEFORE;$("after").value=EX_AFTER;$("tests").value=EX_TESTS;say("workspaceMsg","Example loaded. Run the tests in Proof Mode to verify the After code.");refreshProof();scheduleSave()};
+function downloadBlob(name,blob){var a=document.createElement("a"),u=URL.createObjectURL(blob);a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},1500)}
+$("downloadDiagnostics").onclick=function(){
+  var report={product:"Research to Code",version:"0.3.0-alpha",created_at:new Date().toISOString(),browser:{user_agent:navigator.userAgent||"unknown",language:navigator.language||"unknown",online:navigator.onLine===true,viewport:{width:window.innerWidth||null,height:window.innerHeight||null},features:{worker:typeof Worker!=="undefined",wasm:typeof WebAssembly!=="undefined",service_worker:!!(navigator.serviceWorker),indexed_db:typeof indexedDB!=="undefined",local_storage:false}},configuration:{supabase_configured:!!(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY),api_configured:!!CFG.API_BASE,ai_enabled:CFG.AI_ENABLED===true,payments_enabled:CFG.PAYMENTS_ENABLED===true},notice:"This report deliberately excludes code, tests, PDF text, account email, access tokens and API secrets."};
+  try{localStorage.setItem("rtc_diag_probe","1");localStorage.removeItem("rtc_diag_probe");report.browser.features.local_storage=true}catch(e){}
+  downloadBlob("research-to-code-diagnostics.json",new Blob([JSON.stringify(report,null,2)],{type:"application/json"}));$("diagMsg").textContent="Diagnostic report downloaded. Review it before sharing; it includes basic browser/device details.";
+};
+$("exportWorkspace").onclick=function(){
+  var pack={format:"research-to-code-workspace",version:1,exportedAt:new Date().toISOString(),pdfText:pdfText.slice(0,100000),before:$("before").value,after:$("after").value,tests:$("tests").value,aiOutput:$("aiOutput").textContent,runs:runs.slice(-20).map(function(r){return {at:r.at,target:r.target,code:String(r.code||"").slice(0,20000),tests:String(r.tests||"").slice(0,10000),ran:!!r.ran,status:String(r.status||""),message:String(r.message||"").slice(0,2000),counts:r.counts||null,exit:r.exit,ms:r.ms,py:r.py,pt:r.pt,out:String(r.out||"").slice(0,10000),err:String(r.err||"").slice(0,10000)}})};
+  downloadBlob("research-to-code-workspace.json",new Blob([JSON.stringify(pack,null,2)],{type:"application/json"}));say("workspaceMsg","Workspace backup exported. Keep it private if it contains unpublished research or code.");
+};
+$("importWorkspace").onchange=async function(e){var f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;if(f.size>1048576){say("workspaceMsg","Import rejected: backup must be 1 MB or smaller.");return}try{var p=JSON.parse(await f.text());if(!p||p.format!=="research-to-code-workspace"||p.version!==1||typeof p.before!=="string"||typeof p.after!=="string"||typeof p.tests!=="string"||p.before.length>200000||p.after.length>200000||p.tests.length>100000||typeof (p.pdfText||"")!=="string"||(p.pdfText||"").length>100000||!Array.isArray(p.runs)||p.runs.length>20)throw new Error("Unsupported or invalid workspace backup.");
+  var importedRuns=p.runs.map(function(r){if(!r||typeof r!=="object")throw new Error("Invalid run history.");return {at:typeof r.at==="string"?r.at:new Date().toISOString(),target:r.target==="before"?"before":"after",code:String(r.code||"").slice(0,20000),tests:String(r.tests||"").slice(0,10000),ran:!!r.ran,status:String(r.status||"imported"),message:String(r.message||"").slice(0,2000),counts:r.counts&&typeof r.counts==="object"?{passed:Number.isFinite(Number(r.counts.passed))?Math.max(0,Math.min(100000,Math.trunc(Number(r.counts.passed)))):0,failed:Number.isFinite(Number(r.counts.failed))?Math.max(0,Math.min(100000,Math.trunc(Number(r.counts.failed)))):0,errors:Number.isFinite(Number(r.counts.errors))?Math.max(0,Math.min(100000,Math.trunc(Number(r.counts.errors)))):0}:null,exit:Number.isFinite(Number(r.exit))?Math.max(-100,Math.min(100,Math.trunc(Number(r.exit)))):undefined,ms:Number.isFinite(Number(r.ms))?Math.max(0,Math.min(3600000,Number(r.ms))):undefined,py:String(r.py||"").slice(0,40),pt:String(r.pt||"").slice(0,40),out:String(r.out||"").slice(0,10000),err:String(r.err||"").slice(0,10000)}});$("before").value=p.before;$("after").value=p.after;$("tests").value=p.tests;pdfText=p.pdfText||"";runs=importedRuns;if($("aiOutput"))$("aiOutput").textContent=String(p.aiOutput||"No output yet.").slice(0,18000);if(pdfText){var pa=analyzeText(pdfText);$("pdfOut").hidden=false;$("sPages").textContent="—";$("sChars").textContent=pdfText.length.toLocaleString("en-IN");$("heads").innerHTML=pa.headings.length?pa.headings.map(function(h){return '<li class="w">'+esc(h)+"</li>"}).join(""):'<li class="p">No standard headings found</li>';$("algos").textContent=(pa.algorithms.length?"Mentions: "+pa.algorithms.join(", ")+". ":"No “Algorithm n” labels found. ")+"About "+pa.equations+" numbered equations (rough count).";$("prev").textContent=pdfText.slice(0,3000)+(pdfText.length>3000?"\n\n[Preview ends.]":"");pdfMsg("Imported PDF text from workspace backup. Original PDF file is not included; local OCR is unavailable until you select the PDF again.")}else{$("pdfOut").hidden=true;pdfMsg("")}renderRuns();refreshProof();scheduleSave();say("workspaceMsg","Workspace imported. Review imported code and tests before running them.");
+  }catch(err){say("workspaceMsg",err&&err.message?err.message:"Could not import this backup.")}};
+$("clr").onclick=function(){if(running||ocrActive){say("workspaceMsg","Stop the active test run or wait for OCR to finish before clearing the workspace.");return}pdfLoadId++;currentPdf=null;$("pdf").value="";$("ocrBtn").hidden=true;$("ocrBtn").disabled=false;$("before").value="";$("after").value="";$("tests").value="";pdfText="";runs=[];if($("aiOutput"))$("aiOutput").textContent="No output yet.";if($("pdfOut"))$("pdfOut").hidden=true;if($("pdfMsg"))$("pdfMsg").hidden=true;if($("prev"))$("prev").textContent="";if($("heads"))$("heads").textContent="";if($("algos"))$("algos").textContent="";if($("sPages"))$("sPages").textContent="0";if($("sChars"))$("sChars").textContent="0";renderRuns();refreshProof();say("workspaceMsg","Workspace and local run history cleared. Previously downloaded backups are not deleted.")};
+$("cmp").onclick=function(){go("result")};
+function paint(box,rows){
+  box.textContent="";
+  rows.forEach(function(r){
+    var d=document.createElement("span"),t=r[0];
+    d.className="ln"+(t==="+"?" add":t==="-"?" del":t.charAt(0)==="~"?" mod":"");
+    var s=document.createElement("i");s.textContent=t===" "?"":t.charAt(t.length-1)==="-"?"-":"+";
+    if(t.charAt(0)==="~")s.textContent="~";
+    d.appendChild(s);d.appendChild(document.createTextNode(r[1]));box.appendChild(d);
+  });
+}
+function renderCompare(){
+  var b=$("before").value,a=$("after").value,has=b.trim()||a.trim();
+  $("resEmpty").hidden=!!has;$("resBody").hidden=!has;if(!has)return;
+  document.querySelectorAll("#cseg button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.c===cmpMode)});
+  try{
+    var d=diffRows(b,a);
+    $("nAdd").textContent=d.added;$("nDel").textContent=d.removed;$("nMod").textContent=d.modified;
+    paint($("cmpBox"),cmpMode==="diff"?d.rows:norm(cmpMode==="before"?b:a).split("\n").map(function(l){return[" ",l]}));
+  }catch(e){$("cmpBox").textContent=e.message}
+}
+document.querySelectorAll("#cseg button").forEach(function(x){x.onclick=function(){cmpMode=x.dataset.c;renderCompare()}});
+$("copy").onclick=function(){copyText($("after").value,$("copyMsg"))};
+$("dl").onclick=function(){
+  var a=document.createElement("a"),u=URL.createObjectURL(new Blob([$("after").value],{type:"text/x-python"}));
+  a.href=u;a.download="improved_code.py";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},1500);
+};
+
+/* Proof Mode: the page code below runs inside a Web Worker */
+function workerMain(){
+  var py=null,out=[],err=[];
+  function post(t,x){self.postMessage({type:t,text:x})}
+  var PYRUN="import sys, os, json, importlib\nsys.dont_write_bytecode = True\nos.chdir('/home/pyodide')\nif '/home/pyodide' not in sys.path:\n    sys.path.insert(0, '/home/pyodide')\nfor n in ('solution', 'test_solution'):\n    sys.modules.pop(n, None)\nimportlib.invalidate_caches()\nimport pytest\ncode = pytest.main(['-q', '-p', 'no:cacheprovider', '--color=no', 'test_solution.py'])\njson.dumps([int(code), sys.version.split()[0], pytest.__version__])";
+  self.onmessage=async function(e){
+    var m=e.data;
+    try{
+      if(!py){
+        post("status","Downloading Python (first run only)...");
+        importScripts(m.base+"pyodide.js");
+        py=await loadPyodide({indexURL:m.base});
+        post("status","Loading pytest...");
+        await py.loadPackage("pytest");
+        ["fetch","XMLHttpRequest","WebSocket","EventSource","importScripts","Worker","SharedWorker"].forEach(function(k){try{self[k]=undefined}catch(x){}});
+      }
+      out=[];err=[];
+      py.setStdout({batched:function(s){out.push(s)}});
+      py.setStderr({batched:function(s){err.push(s)}});
+      py.FS.writeFile("/home/pyodide/solution.py",m.code);
+      py.FS.writeFile("/home/pyodide/test_solution.py",m.tests);
+      post("started");
+      var t0=Date.now(),r=JSON.parse(await py.runPythonAsync(PYRUN));
+      self.postMessage({type:"result",exitCode:r[0],python:r[1],pytest:r[2],stdout:out.join("\n"),stderr:err.join("\n"),ms:Date.now()-t0});
+    }catch(x){post("fatal",String(x&&x.message?x.message:x))}
+  };
+}
+function curCode(){return $(target).value}
+function refreshProof(){
+  var last=runs.filter(function(r){return r.ran}).pop(),el=$("tState");
+  if(!last)el.innerHTML='<span class="chip c-sug">Not run yet</span>';
+  else if(last.code===curCode()&&last.tests===$("tests").value)el.innerHTML='<span class="chip c-ok">Last run used exactly this code and these tests</span>';
+  else el.innerHTML='<span class="chip c-sug">Changed since the last run, not run</span>';
+}
+["after","before","tests"].forEach(function(id){$(id).addEventListener("input",refreshProof)});
+document.querySelectorAll("#tseg button").forEach(function(b){b.onclick=function(){target=b.dataset.t;document.querySelectorAll("#tseg button").forEach(function(x){x.setAttribute("aria-pressed",x===b)});refreshProof()}});
+function setRun(on){running=on;$("run").disabled=on;$("stop").hidden=!on}
+function execute(code,tests){
+  return new Promise(function(resolve){
+    var timer=null,t0=0,lt=null,w=null;
+    function resetWorker(){if(worker){try{worker.terminate()}catch(_){}}worker=null;if(workerUrl){URL.revokeObjectURL(workerUrl);workerUrl=null}}
+    function finish(o){clearTimeout(timer);clearTimeout(lt);if(w)w.onmessage=null;if(o.kind!=="done")resetWorker();resolve(o)}
+    if(!worker){workerUrl=URL.createObjectURL(new Blob(["("+workerMain.toString()+")()"],{type:"application/javascript"}));worker=new Worker(workerUrl)}
+    w=worker;
+    lt=setTimeout(function(){if(!t0)finish({kind:"notrun",message:"Downloading Python timed out. Check your internet connection and try again."})},LOAD_LIMIT_MS);
+    w.onerror=function(e){finish({kind:"notrun",message:e.message||"The test worker failed to start. The worker was reset; try again."})};
+    w.onmessage=function(e){
+      var d=e.data;
+      if(d.type==="status")$("runStatus").textContent=d.text;
+      else if(d.type==="started"){clearTimeout(lt);$("runStatus").textContent="Running tests...";t0=performance.now();timer=setTimeout(function(){finish({kind:"timeout",ms:Math.round(performance.now()-t0)})},RUN_LIMIT_MS)}
+      else if(d.type==="result")finish({kind:"done",d:d});
+      else if(d.type==="fatal")finish({kind:t0?"error":"notrun",message:d.text||"Python worker failed. The worker was reset; try again."});
+    };
+    $("stop").onclick=function(){if(t0)finish({kind:"stopped",ms:Math.round(performance.now()-t0)});else finish({kind:"notrun",message:"Stopped before the tests started."})};
+    w.postMessage({base:PYBASE,code:code,tests:tests});
+  });
+}
+$("run").onclick=async function(){
+  if(running)return;
+  var code=curCode(),tests=$("tests").value;
+  if(code.length>100000||tests.length>50000){$("runStatus").textContent="For browser stability, code is limited to 100 KB and tests to 50 KB per run. Split the project into smaller tests.";return}
+  if(!code.trim()||!tests.trim()){$("runStatus").textContent="Add code and tests first. Use “Load example pair and tests” in the Code tab to try it.";return}
+  setRun(true);$("runStatus").textContent="Starting...";
+  var at=new Date().toISOString(),o;
+  try{o=await execute(code,tests)}catch(x){if(worker){try{worker.terminate()}catch(_){}}worker=null;if(workerUrl){URL.revokeObjectURL(workerUrl);workerUrl=null}o={kind:"notrun",message:"Could not start the test worker. "+(x&&x.message?x.message:"")}}
+  var r={at:at,target:target,code:code,tests:tests,ran:false,status:"notrun",message:o.message||""};
+  if(o.kind==="done"){var c=classify(o.d.exitCode,o.d.stdout);r.ran=true;r.status=c.status;r.counts=c.counts;r.exit=o.d.exitCode;r.ms=o.d.ms;r.py=o.d.python;r.pt=o.d.pytest;r.out=o.d.stdout;r.err=o.d.stderr}
+  else if(o.kind==="timeout"){r.ran=true;r.status="timed out";r.ms=o.ms;r.message="Stopped after "+RUN_LIMIT_MS/1000+" seconds. The code may be in an infinite loop."}
+  else if(o.kind==="stopped"){r.ran=true;r.status="stopped";r.ms=o.ms;r.message="You stopped the run."}
+  else if(o.kind==="error"){r.ran=true;r.status="error"}
+  runs.push(r);setRun(false);$("runStatus").textContent="";renderRuns();refreshProof();scheduleSave();
+};
+function renderRuns(){
+  var box=$("runs");
+  if(!runs.length){box.innerHTML='<div class="empty"><b>No tests have been executed.</b><p style="margin:6px 0 0">A result will appear here after a run finishes, with the command, logs and errors.</p></div>';return}
+  box.innerHTML=runs.slice().reverse().map(function(r){
+    var chip=r.ran?'<span class="chip c-ok">Executed</span> ':'<span class="chip c-sug">Did not run</span> ';
+    chip+=r.status==="passed"?'<span class="chip c-ok">Passed</span>':r.ran?'<span class="chip c-bad">'+esc(r.status.charAt(0).toUpperCase()+r.status.slice(1))+"</span>":"";
+    var h='<div class="card">'+chip+'<p class="mut" style="margin:8px 0 4px">'+esc(new Date(r.at).toLocaleString())+(r.ms!=null?", "+(r.ms/1000).toFixed(2)+" s":"")+", ran against "+esc(r.target)+" code</p>";
+    if(r.ran)h+='<p class="note" style="margin:0 0 6px">Command: pytest.main(["-q", "-p", "no:cacheprovider", "test_solution.py"]) inside Pyodide in this browser.'+(r.py?" Python "+esc(r.py)+", pytest "+esc(r.pt)+".":"")+"</p>";
+    if(r.counts)h+="<p style='margin:0 0 6px'><b>"+r.counts.passed+" passed, "+r.counts.failed+" failed, "+r.counts.errors+" errors</b> (exit code "+r.exit+")</p>";
+    if(r.message)h+="<p style='margin:0 0 6px'>"+esc(r.message)+"</p>";
+    if(r.out)h+='<details><summary>Output log</summary><div class="codebox txt">'+esc(r.out)+"</div></details>";
+    if(r.err)h+='<details><summary>Error log</summary><div class="codebox txt">'+esc(r.err)+"</div></details>";
+    return h+"</div>";
+  }).join("");
+}
+/* ===== Sign-in and plans. SETTINGS: public values only. Never paste a secret key here. ===== */
+var CFG={SUPABASE_URL:"",SUPABASE_ANON_KEY:"",API_BASE:"",RAZORPAY_KEY_ID:"",PAYMENTS_ENABLED:false,AI_ENABLED:false};
+var DEMO_PREVIEW_BUILD=true; // Set false before any public deployment; this build is for local/preview testing only.
+var SBJS="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js",RZPJS="https://checkout.razorpay.com/v1/checkout.js";
+var sb=null,session=null,cool=0,coolT=null;
+var LOCAL_PREVIEW=(typeof location!=="undefined"&&(location.protocol==="file:"||location.hostname==="localhost"||location.hostname==="127.0.0.1"));
+function setGateMessage(t){var el=$("gateStatus");if(el)el.textContent=t||""}
+function setupGate(){
+  var configured=cfgOk();
+  $("gateAuthForms").hidden=!configured;
+  $("gatePreviewArea").hidden=!((LOCAL_PREVIEW||DEMO_PREVIEW_BUILD)&&!session&&!configured);
+  if(configured){$("gateSetupMessage").textContent=currentLang==="en"?"Sign-in is enabled. Use your email code or Google account to continue.":"साइन-इन चालू है। आगे बढ़ने के लिए ईमेल कोड या Google अकाउंट इस्तेमाल करें।"}
+  else if(LOCAL_PREVIEW||DEMO_PREVIEW_BUILD){$("gateSetupMessage").textContent=currentLang==="en"?"This preview has no Supabase sign-in settings. You can enter demo mode to test local features; no real account is created.":"इस प्रीव्यू में Supabase की साइन-इन सेटिंग नहीं है। लोकल फ़ीचर जाँचने के लिए डेमो में प्रवेश करें; असली अकाउंट नहीं बनेगा।"}
+  else {$("gateSetupMessage").textContent=currentLang==="en"?"Sign-in is not configured on this site. The owner must configure Supabase Auth before customers can continue.":"इस वेबसाइट पर साइन-इन सेट नहीं है। ग्राहकों को प्रवेश देने से पहले मालिक को Supabase Auth कॉन्फ़िगर करना होगा।"}
+  $("gateDemo").textContent=tr("gateDemo");
+}
+function unlockApp(mode){
+  document.body.classList.add("app-unlocked");
+  if(mode==="preview"){
+    try{sessionStorage.setItem("rtc_preview_access_v1","yes")}catch(e){}
+    $("previewModeBanner").hidden=false;
+    $("mainBanner").hidden=true;
+  }else{
+    try{sessionStorage.removeItem("rtc_preview_access_v1")}catch(e){}
+    $("previewModeBanner").hidden=true;
+    $("mainBanner").hidden=false;
+  }
+  if(session)renderAccount();
+  go("home");
+}
+function lockApp(){
+  document.body.classList.remove("app-unlocked");
+  try{sessionStorage.removeItem("rtc_preview_access_v1")}catch(e){}
+  $("previewModeBanner").hidden=true;$("mainBanner").hidden=false;
+  setupGate();
+}
+function cfgOk(){return !!(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY&&!isSecretKey(CFG.SUPABASE_ANON_KEY))}
+function say(id,t){$(id).textContent=t||""}
+function lock(id,on){$(id).disabled=on}
+async function initAuth(){
+  renderAccount();renderPlans();
+  if(!cfgOk()){
+    setupGate();
+    try{if(LOCAL_PREVIEW&&sessionStorage.getItem("rtc_preview_access_v1")==="yes"){unlockApp("preview");return}}catch(e){}
+    return;
+  }
+  try{
+    await loadScript(SBJS,"sign-in library");
+    sb=supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY,{auth:{flowType:"pkce",detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
+    session=(await sb.auth.getSession()).data.session;
+    sb.auth.onAuthStateChange(function(ev,s){session=s;setTimeout(function(){renderAccount();renderPlans();refreshAIStatus();if(session)unlockApp("account");else lockApp()},0)});
+    if(session)unlockApp("account");else setupGate();
+  }catch(e){setupGate();setGateMessage((currentLang==="en"?"Could not start sign-in: ":"साइन-इन शुरू नहीं हो सका: ")+(e&&e.message?e.message:""));say("acMsg","Could not start sign-in. "+(e&&e.message?e.message:""))}
+  renderAccount();renderPlans();
+}
+function gateSendCode(){
+  var em=$("gateEmail").value.trim();
+  if(!sb){setGateMessage(currentLang==="en"?"Sign-in is not configured yet.":"साइन-इन अभी कॉन्फ़िगर नहीं है।");return}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){setGateMessage(currentLang==="en"?"Enter a valid email address.":"सही ईमेल पता दर्ज करें।");return}
+  lock("gateSendOtp",true);setGateMessage(currentLang==="en"?"Sending sign-in code…":"साइन-इन कोड भेजा जा रहा है…");
+  sb.auth.signInWithOtp({email:em,options:{shouldCreateUser:true}}).then(function(r){
+    lock("gateSendOtp",false);
+    if(r.error){setGateMessage(friendlyAuthError(r.error.message));return}
+    $("gateOtpBox").hidden=false;setGateMessage(currentLang==="en"?"Code sent. Check your inbox and spam folder.":"कोड भेज दिया गया है। Inbox और Spam फ़ोल्डर देखें।");
+  }).catch(function(e){lock("gateSendOtp",false);setGateMessage(friendlyAuthError(e&&e.message))});
+}
+async function gateVerifyCode(){
+  var em=$("gateEmail").value.trim(),code=$("gateOtp").value.replace(/\s/g,"");
+  if(!sb){setGateMessage(currentLang==="en"?"Sign-in is not configured yet.":"साइन-इन अभी कॉन्फ़िगर नहीं है।");return}
+  if(!/^\d{6,10}$/.test(code)){setGateMessage(currentLang==="en"?"Enter the numeric code from email.":"ईमेल में आया नंबर वाला कोड दर्ज करें।");return}
+  lock("gateVerifyOtp",true);setGateMessage(currentLang==="en"?"Verifying code…":"कोड जाँचा जा रहा है…");
+  try{var r=await sb.auth.verifyOtp({email:em,token:code,type:"email"});if(r.error)throw r.error;session=(await sb.auth.getSession()).data.session;if(session)unlockApp("account");else setGateMessage(currentLang==="en"?"Code accepted, but no active session was returned.":"कोड स्वीकार हुआ, पर सक्रिय सेशन नहीं मिला।")}catch(e){setGateMessage(friendlyAuthError(e&&e.message))}finally{lock("gateVerifyOtp",false)}
+}
+async function gateGoogleSignIn(){
+  if(!sb){setGateMessage(currentLang==="en"?"Google sign-in is not configured yet.":"Google साइन-इन अभी कॉन्फ़िगर नहीं है।");return}
+  lock("gateGoogle",true);setGateMessage(currentLang==="en"?"Opening Google sign-in…":"Google साइन-इन खुल रहा है…");
+  try{var r=await sb.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+location.pathname}});if(r.error)throw r.error}
+  catch(e){setGateMessage(friendlyAuthError(e&&e.message));lock("gateGoogle",false)}
+}
+$("gateSendOtp").addEventListener("click",gateSendCode);
+$("gateVerifyOtp").addEventListener("click",gateVerifyCode);
+$("gateGoogle").addEventListener("click",gateGoogleSignIn);
+$("gateDemo").addEventListener("click",function(){if(!(LOCAL_PREVIEW||DEMO_PREVIEW_BUILD)){setGateMessage(currentLang==="en"?"Demo mode is available only in a local file preview.":"डेमो मोड सिर्फ़ लोकल फ़ाइल प्रीव्यू में उपलब्ध है।");return}setGateMessage(currentLang==="en"?"Demo mode: no account created. Opening local tools…":"डेमो मोड: कोई अकाउंट नहीं बना। लोकल टूल खोले जा रहे हैं…");unlockApp("preview")});
+function setupLanguageSelects(){
+  var saved="hi";try{saved=localStorage.getItem("rtc_language_v1")||"hi"}catch(e){}
+  applyLanguage(saved);
+  ["gateLanguage","languageToggle"].forEach(function(id){var el=$(id);if(el)el.addEventListener("change",function(){applyLanguage(el.value);setupGate()})});
+}
+
+function renderAccount(){
+  var ok=cfgOk(),on=!!session,bad=CFG.SUPABASE_ANON_KEY&&isSecretKey(CFG.SUPABASE_ANON_KEY);
+  $("acNone").hidden=ok;$("acOut").hidden=!ok||on||!sb;$("acIn").hidden=!on;
+  if(!ok)$("acNone").innerHTML=bad?'<h3>Setup error</h3><p class="mut" style="margin:0">A secret key was found in the website settings, so sign-in is turned off. Remove it and rotate that key in Supabase.</p>':'<h3>लाइव साइन-अप अभी सेट नहीं है</h3><p class="mut" style="margin:6px 0 12px">कारण: इस प्रीव्यू में Supabase login URL और public key खाली हैं। इसलिए ईमेल कोड या Google साइन-इन शुरू नहीं हो सकता। कोई अकाउंट नहीं बना है और आपका ईमेल भेजा नहीं गया।</p><button class="btn alt" type="button" data-go="home">बिना अकाउंट आगे बढ़ें</button><p class="note" style="margin-top:10px">असली साइन-अप चालू करने के लिए साइट के मालिक को Supabase Auth और redirect URL सेट करने होंगे।</p>';
+  $("acBtn").textContent=on?(currentLang==="en"?"Account":"अकाउंट"):(currentLang==="en"?"Sign up":"साइन अप");
+  if(on){$("acEmail").textContent=session.user.email||"Signed in";loadEnt()}
+}
+async function loadEnt(){
+  if(!sb||!session)return;
+  try{var r=await sb.from("entitlements").select("plan_id,expires_at").maybeSingle();if(r.error)throw r.error;
+    $("acPlan").textContent=r.data&&Date.parse(r.data.expires_at)>Date.now()?"Premium until "+new Date(r.data.expires_at).toLocaleDateString("en-IN"):"Free plan"}
+  catch(e){$("acPlan").textContent="Plan status unavailable. Try again later."}
+}
+function tick(){var r=$("resend"),s=$("sendOtp");r.disabled=s.disabled=cool>0;r.textContent=cool>0?"Resend code in "+cool+"s":"Resend code"}
+function startCool(n){cool=n;clearInterval(coolT);tick();coolT=setInterval(function(){cool--;tick();if(cool<=0)clearInterval(coolT)},1000)}
+async function sendCode(){
+  var em=$("email").value.trim();
+  if(!sb||cool>0)return;
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){say("acMsg","Enter a valid email address.");return}
+  lock("sendOtp",true);say("acMsg","Sending code...");
+  try{var r=await sb.auth.signInWithOtp({email:em,options:{shouldCreateUser:true}});
+    if(r.error){lock("sendOtp",false);say("acMsg",friendlyAuthError(r.error.message));return}
+    $("otpBox").hidden=false;startCool(60);say("acMsg","We sent a code to "+em+". Check your inbox and spam folder.");
+  }catch(e){lock("sendOtp",false);say("acMsg",friendlyAuthError(e&&e.message))}
+}
+async function verifyCode(){
+  var em=$("email").value.trim(),c=$("otp").value.replace(/\s/g,"");
+  if(!sb)return;
+  if(!/^\d{6,10}$/.test(c)){say("acMsg","Enter the numeric code from the email.");return}
+  lock("verOtp",true);say("acMsg","Checking code...");
+  try{var r=await sb.auth.verifyOtp({email:em,token:c,type:"email"});
+    if(r.error)say("acMsg",friendlyAuthError(r.error.message));
+    else{$("otp").value="";$("otpBox").hidden=true;say("acMsg","You are signed in.")}
+  }catch(e){say("acMsg",friendlyAuthError(e&&e.message))}
+  lock("verOtp",false);
+}
+async function googleIn(){
+  if(!sb)return;lock("gBtn",true);say("acMsg","Opening Google...");
+  try{var r=await sb.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+location.pathname}});if(r.error){say("acMsg",friendlyAuthError(r.error.message));lock("gBtn",false)}}
+  catch(e){say("acMsg",friendlyAuthError(e&&e.message));lock("gBtn",false)}
+}
+async function renderPlans(){
+  var b=$("buyBox");
+  if(!CFG.PAYMENTS_ENABLED||!CFG.API_BASE||!cfgOk()){b.innerHTML='<p class="mut" style="margin:0">अभी खरीद बंद है (Purchases are switched off). एक ही Razorpay Checkout में UPI ऐप/QR (जहाँ सक्षम हो), कार्ड, नेट बैंकिंग, वॉलेट और अनुमति/पात्रता के अनुसार EMI या Pay Later मिल सकते हैं। इसे जाँचने के लिए पहले Razorpay TEST keys और backend सेट करें। इस build में live payment स्वीकार न करें।</p>';return}
+  if(!session||!sb){b.innerHTML='<p class="mut">Sign in to see Premium plans.</p><button class="btn alt" data-go="account" type="button">Go to sign-in</button>';return}
+  try{
+    var r=await sb.from("plans").select("id,name,price_paise,duration_days").order("price_paise");if(r.error)throw r.error;
+    var test=/^rzp_test_/.test(CFG.RAZORPAY_KEY_ID);
+    b.innerHTML=(test?'<p><span class="chip c-acc">Test mode: no real money · TEST मोड: असली पैसा नहीं</span></p>':"")+'<p class="note">एक ही Razorpay Checkout खुलेगा। उसमें आपके अकाउंट के लिए चालू भुगतान विकल्प दिखेंगे।</p>'+(r.data.length?r.data.map(function(p){return'<div class="card"><h3>'+esc(p.name)+'</h3><p class="mut" style="margin:0 0 8px">₹'+(p.price_paise/100).toLocaleString("en-IN")+" · "+p.duration_days+' दिन</p><button class="btn" type="button" data-plan="'+esc(p.id)+'">सुरक्षित checkout खोलें</button></div>'}).join(""):'<p class="mut" style="margin:0">अभी कोई प्लान उपलब्ध नहीं है।</p>')+'<div class="toast" id="buyMsg" role="status"></div>';
+  }catch(e){b.textContent="Could not load plans. Try again later."}
+}
+async function buy(id){
+  var m=function(t){var el=$("buyMsg");if(el)el.textContent=t};
+  try{
+    m("Creating your order...");
+    var tok=(await sb.auth.getSession()).data.session.access_token,hd={authorization:"Bearer "+tok,"content-type":"application/json"};
+    var r=await fetch(CFG.API_BASE+"/api/orders",{method:"POST",headers:hd,body:JSON.stringify({plan_id:id})}),o;try{o=await r.json()}catch(_){throw new Error("Payment service returned an unreadable response. No payment was confirmed; try again later.")}
+    if(!r.ok)throw new Error(o.error||"Could not create the order.");
+    if(!window.Razorpay)await loadScript(RZPJS,"payment window");
+    var rz=new Razorpay({key:o.key_id,order_id:o.order_id,amount:o.amount,currency:o.currency,name:"Research to Code",prefill:{email:session.user.email},
+      handler:async function(p){m("Confirming payment...");
+        try{var v=await fetch(CFG.API_BASE+"/api/verify",{method:"POST",headers:hd,body:JSON.stringify({razorpay_order_id:p.razorpay_order_id,razorpay_payment_id:p.razorpay_payment_id,razorpay_signature:p.razorpay_signature})}),j=await v.json();
+          m(v.ok?(j.status==="pending"?"Payment received. The bank is still confirming it. Your plan will update shortly. Check Account.":"Payment confirmed. Your plan is updated."):(j.error||"We could not confirm the payment yet. Check Account in a minute."));loadEnt()}
+        catch(e){m("Could not confirm right now. If money was taken, your plan will update after confirmation. Check Account.")}},
+      modal:{ondismiss:function(){m("Checkout closed. If money was taken, your plan will update after confirmation. Check Account.")}}});
+    rz.on("payment.failed",function(x){m("Payment failed: "+((x.error&&x.error.description)||"please try again."))});
+    rz.open();
+  }catch(e){m(e&&e.message?e.message:"Something went wrong.")}
+}
+var aiBusy=false;
+function refreshAIStatus(){
+  var configured=!!(CFG.AI_ENABLED&&CFG.API_BASE&&cfgOk());
+  $("aiUsage").textContent=configured?"AI endpoint is configured. Sign in and accept the data-sharing notice before requesting AI." : "AI is not configured yet. The site owner must configure an AI provider key and model on the backend; no AI provider is selected by default.";
+  document.querySelectorAll("[data-ai]").forEach(function(b){b.disabled=!configured||!session||aiBusy});
+}
+async function askAI(feature){
+  if(aiBusy)return;
+  if(!$("aiConsent").checked){say("aiStatus","Please accept the data-sharing notice first.");return}
+  if(!sb||!session){say("aiStatus","Sign in first. Open Account to sign in.");return}
+  var text="",code="";
+  if(feature==="summary"||feature==="explain")text=pdfText.slice(0,18000);
+  else {code=($("after").value||$("before").value).slice(0,12000);text=$("tests").value.slice(0,4000)}
+  if((feature==="summary"||feature==="explain")&&text.length<80){say("aiStatus","Read a text-based PDF or run OCR first.");return}
+  if((feature==="improve"||feature==="tests")&&code.trim().length<10){say("aiStatus","Add code in the Code tab first.");return}
+  aiBusy=true;document.querySelectorAll("[data-ai]").forEach(function(b){b.disabled=true});say("aiStatus","Working… the submitted PDF excerpt or code/tests are being sent to the configured AI provider.");$("aiOutput").textContent="";
+  try{
+    var ses=(await sb.auth.getSession()).data.session;if(!ses)throw new Error("Please sign in again.");
+    var r=await fetch(CFG.API_BASE+"/api/ai",{method:"POST",headers:{authorization:"Bearer "+ses.access_token,"content-type":"application/json"},body:JSON.stringify({feature:feature,text:text,code:code,tests:(feature==="tests"||feature==="improve")?text:"",consent:true})});
+    var j;try{j=await r.json()}catch(_){throw new Error("AI service returned an unreadable response. Try again later.")}if(!r.ok)throw new Error(j.error||"AI request failed.");
+    $("aiOutput").textContent=j.output||"No output returned.";say("aiStatus","Finished. Verify the result before using it.");scheduleSave();$("aiUsage").textContent="This month: "+j.used+" / "+j.limit+" AI requests used ("+(j.premium?"Premium":"Free")+").";
+  }catch(e){say("aiStatus",e&&e.message?e.message:"AI request failed. Try again later.")}
+  finally{aiBusy=false;refreshAIStatus()}
+}
+document.querySelectorAll("[data-ai]").forEach(function(b){b.onclick=function(){askAI(b.dataset.ai)}});
+$("aiCopy").onclick=function(){copyText($("aiOutput").textContent,$("aiStatus"))};
+function fencedCode(text){var m=/```(?:python|py)?\s*([\s\S]*?)```/i.exec(text||"");return m?m[1].trim():""}
+$("aiUseCode").onclick=function(){var c=fencedCode($("aiOutput").textContent);if(!c){say("aiStatus","No fenced code block found in the AI output.");return}$("after").value=c;go("code");say("aiStatus","Copied AI suggestion into After. Review it before running tests.")};
+$("aiUseTests").onclick=function(){var c=fencedCode($("aiOutput").textContent);if(!c){say("aiStatus","No fenced code block found in the AI output.");return}$("tests").value=c;go("proof");say("aiStatus","AI tests copied to Proof Mode. Review them before running.")};
+$("buyBox").onclick=function(e){var d=e.target&&e.target.dataset;if(!d)return;if(d.plan)buy(d.plan);else if(d.go)go(d.go)};
+$("acBtn").onclick=function(){go("account");if(!cfgOk())say("acMsg","लाइव साइन-अप चालू नहीं है: इस प्रीव्यू में Supabase की सार्वजनिक सेटिंग्स कॉन्फ़िगर नहीं हैं।")};
+$("gBtn").onclick=googleIn;$("sendOtp").onclick=sendCode;$("resend").onclick=sendCode;$("verOtp").onclick=verifyCode;$("acRef").onclick=loadEnt;
+$("accountExport").onclick=async function(){if(!session||!CFG.API_BASE){say("acMsg","Sign in and configure the backend first.");return}lock("accountExport",true);try{var r=await fetch(CFG.API_BASE+"/api/account/export",{method:"POST",headers:{authorization:"Bearer "+session.access_token,"content-type":"application/json"},body:"{}"});var j;try{j=await r.json()}catch(_){throw new Error("Account service returned an unreadable response. Try again later.")}if(!r.ok)throw new Error(j.error||"Export failed.");downloadBlob("research-to-code-account-export.json",new Blob([JSON.stringify(j,null,2)],{type:"application/json"}));say("acMsg","Account data exported. Keep the file private.")}catch(e){say("acMsg",e&&e.message?e.message:"Account export failed.")}finally{lock("accountExport",false)}};
+$("accountDelete").onclick=async function(){if(!session||!CFG.API_BASE){say("acMsg","Sign in and configure the backend first.");return}if(!window.confirm("Permanently delete your account and server-held app data? This cannot be undone and does not automatically refund payments. Continue only if you are sure."))return;if(window.prompt("Type DELETE_MY_ACCOUNT to confirm permanent deletion.")!=="DELETE_MY_ACCOUNT"){say("acMsg","Deletion cancelled: confirmation text did not match.");return}lock("accountDelete",true);try{var r=await fetch(CFG.API_BASE+"/api/account/delete",{method:"POST",headers:{authorization:"Bearer "+session.access_token,"content-type":"application/json"},body:JSON.stringify({confirm:"DELETE_MY_ACCOUNT"})});var j;try{j=await r.json()}catch(_){throw new Error("Account service returned an unreadable response. Deletion was not confirmed; check again before retrying.")}if(!r.ok)throw new Error(j.error||"Account deletion failed.");if(sb)await sb.auth.signOut();session=null;renderAccount();say("acMsg","Account and app records were deleted. External providers may retain records under their own policies.")}catch(e){say("acMsg",e&&e.message?e.message:"Account deletion failed.")}finally{lock("accountDelete",false)}};
+$("outBtn").onclick=async function(){if(!sb)return;try{await sb.auth.signOut();session=null;lockApp();setGateMessage(currentLang==="en"?"You are signed out.":"आप साइन आउट हो चुके हैं।");say("acMsg","You are signed out.")}catch(e){say("acMsg","Could not sign out. Try again.")}};
+["before","after","tests"].forEach(function(id){$(id).addEventListener("input",scheduleSave)});
+if(window.addEventListener)window.addEventListener("pagehide",saveDraft);
+var installPrompt=null;
+window.addEventListener&&window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();installPrompt=e;$("installBtn").hidden=false});
+$("installBtn").onclick=async function(){if(!installPrompt){say("workspaceMsg","If install is unavailable, open your browser menu and choose Add to Home screen.");return}installPrompt.prompt();try{await installPrompt.userChoice}catch(e){}installPrompt=null;$("installBtn").hidden=true};
+if("serviceWorker" in navigator && (location.protocol==="https:"||location.hostname==="localhost"||location.hostname==="127.0.0.1"))navigator.serviceWorker.register("./sw.js").catch(function(){/* Offline shell is optional; core online app remains usable. */});
+restoreDraft();
+var originalClear=$("clr").onclick;
+$("clr").onclick=function(){if(running||ocrActive){originalClear();return}if(!window.confirm("Clear the current workspace and its locally saved draft from this browser? Downloaded backups will remain."))return;originalClear();draftCleared=true;try{localStorage.removeItem(SAVE_KEY)}catch(e){}$("saveBadge").textContent="Local draft cleared"};
+if(window.addEventListener)window.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){if($("proof").classList.contains("on")){$("run").click();e.preventDefault()}else if($("code").classList.contains("on")){$("cmp").click();e.preventDefault()}}if(e.altKey&&/^[1-4]$/.test(e.key)){var ids=["home","paper","code","proof"];go(ids[Number(e.key)-1]);e.preventDefault()}});
+renderRuns();setupLanguageSelects();go("home");initAuth();refreshAIStatus();
+</script>
+
+</body>
+</html>

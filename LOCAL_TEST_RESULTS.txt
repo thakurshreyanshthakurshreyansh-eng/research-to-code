@@ -1,10 +1,35 @@
-Local test results
+Research to Code — local verification report
+Date: 29 October 2026
 
-Status: Not independently verified in this GitHub upload session.
-Required before launch:
-- Run the repository test suite.
-- Validate worker syntax and package configuration.
-- Test index.html in a browser.
-- Test authentication and database integration.
-- Verify privacy, terms, manifest, service worker, and mobile layout.
-Do not treat this checklist as a passing test report until tests are actually run.
+RESULT: All local automated test groups passed after the UX/pricing revision.
+
+Node test groups (224 checks total):
+- Logic: 16 passed
+- Page flow / mobile-preview DOM harness: 36 passed
+- Sign-in and payment screens: 31 passed
+- Example Python stand-in: 5 passed
+- Cross-file integration: 30 passed
+- Worker with simulated database/Razorpay: 58 passed
+- Static security and launch-readiness audit: 38 passed
+- Pricing calculations: 3 passed
+- JavaScript/PWA syntax and asset integrity: 5 passed
+- Sample challenge harness: 2 passed
+
+Separate real pytest run:
+- samples/ewma-anomaly-detection/test_solution.py: 10 passed
+- Fault-injection sample is expected to fail tests; this verifies the test harness can detect a broken implementation.
+
+Additional checks:
+- Inline application JavaScript syntax: passed
+- Worker JavaScript syntax: passed
+- Service-worker JavaScript syntax: passed
+- HTML IDs: 139 total, 139 unique, 0 duplicates
+- Proposed price math: Pro ₹599 estimated contribution ₹261.42; Ultra ₹1,299 estimated contribution ₹604.86 under documented assumptions.
+- Live payment flag: false. AI: off. Supabase keys: blank. Razorpay: no real checkout.
+
+Important limits:
+- These are local automated checks and simulated backend/payment tests, not a live end-to-end production test.
+- Real Android Chrome scrolling/touch latency, device memory use and network conditions have not been measured in this environment.
+- Real Supabase login/OAuth, live AI provider requests, Razorpay test checkout, webhook delivery, refunds/cancellations and subscription renewals are not live-verified.
+- `DEMO_PREVIEW_BUILD=true` is intentionally set in this preview package so users can enter local demo mode without backend configuration. Set it to false before public deployment.
+- Pro/Ultra prices are proposals only; checkout remains disabled. Ultra's 200-request quota is not implemented in the Worker yet.
