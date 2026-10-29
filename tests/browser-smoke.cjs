@@ -88,6 +88,21 @@ function makePdf(text) {
       const download = await downloadPromise;
       assert.equal(download.suggestedFilename(), "research-to-code-workspace.json", viewport.name + ": workspace export filename");
 
+      // Import must validate and restore a well-formed workspace backup.
+      const backup = {
+        format: "research-to-code-workspace", version: 1, exportedAt: new Date().toISOString(),
+        pdfText: "", before: "def saved():\\n    return 7\\n", after: "def saved():\\n    return 8\\n",
+        tests: "def test_saved():\\n    assert True\\n", aiOutput: "", runs: []
+      };
+      await page.locator("#importWorkspace").setInputFiles({
+        name: "roundtrip.json", mimeType: "application/json",
+        buffer: Buffer.from(JSON.stringify(backup))
+      });
+      await page.waitForFunction(() => document.querySelector("#workspaceMsg").textContent.includes("Workspace imported"));
+      assert.equal(await page.locator("#before").inputValue(), backup.before, viewport.name + ": workspace import restores Before code");
+      assert.equal(await page.locator("#after").inputValue(), backup.after, viewport.name + ": workspace import restores After code");
+      assert.equal(await page.locator("#tests").inputValue(), backup.tests, viewport.name + ": workspace import restores tests");
+
       // A small real PDF must extract text in the browser, not just reject bad files.
       await page.locator('#nav button[data-t="paper"]').click();
       const samplePdfText = "Research to Code sample paper describes a method. Algorithm 1 and Equation 1 are included for extraction testing.";
