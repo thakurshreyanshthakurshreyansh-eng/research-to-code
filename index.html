@@ -756,7 +756,8 @@ var LOCAL_PREVIEW=(typeof location!=="undefined"&&(location.protocol==="file:"||
 function setGateMessage(t){var el=$("gateStatus");if(el)el.textContent=t||""}
 function setupGate(){
   var configured=cfgOk();
-  $("gateAuthForms").hidden=!configured;
+  $("gateAuthForms").hidden=false; /* Keep sign-in controls visible; setupGate reports when auth is not configured. */
+  $("gateSendOtp").disabled=!configured;$("gateGoogle").disabled=!configured;
   $("gatePreviewArea").hidden=!((LOCAL_PREVIEW||DEMO_PREVIEW_BUILD)&&!session&&!configured);
   if(configured){$("gateSetupMessage").textContent=currentLang==="en"?"Sign-in is enabled. Use your email code or Google account to continue.":"साइन-इन चालू है। आगे बढ़ने के लिए ईमेल कोड या Google अकाउंट इस्तेमाल करें।"}
   else if(LOCAL_PREVIEW||DEMO_PREVIEW_BUILD){$("gateSetupMessage").textContent=currentLang==="en"?"This preview has no Supabase sign-in settings. You can enter demo mode to test local features; no real account is created.":"इस प्रीव्यू में Supabase की साइन-इन सेटिंग नहीं है। लोकल फ़ीचर जाँचने के लिए डेमो में प्रवेश करें; असली अकाउंट नहीं बनेगा।"}
