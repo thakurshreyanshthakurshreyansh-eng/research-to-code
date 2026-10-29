@@ -166,6 +166,7 @@ export default {
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
     // Liveness only: do not expose secret presence or imply dependencies are healthy.
     if (u.pathname === "/health" && req.method === "GET") return json({ status: "ok", service: "research-to-code-api" }, 200, cors);
+    if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY || !env.SUPABASE_SERVICE_ROLE_KEY) return json({ error: "Backend is not configured yet. The site owner must finish Supabase setup." }, 503, cors);
     if (req.method !== "POST") return json({ error: "Not found." }, 404, cors);
     try {
       if (u.pathname === "/api/webhook") return await webhook(req, env);
