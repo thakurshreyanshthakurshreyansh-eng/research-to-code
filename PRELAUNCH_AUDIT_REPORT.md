@@ -67,3 +67,13 @@ Do not publicly launch or accept customer money until the deployment checklist i
 - Added a meta CSP fallback in `index.html` because Render does not consume Cloudflare Pages' `_headers` file. The fallback is covered by static checks. It is not a substitute for response headers or a real browser network/console test.
 - Fixed the test harness's URL-host parser to handle CSP separators and explicitly configured Supabase/Worker origins; both GitHub Actions workflows passed the 224-check suite and the separate 10-test pytest suite on revision `de27ef14ed11283364bfddab29eab554f133e11a`.
 - Updated README and SETUP to explicitly warn about Render response-header configuration. Public launch remains blocked pending Supabase SQL/Auth, separate API Worker deployment, real end-to-end tests, completed legal/support details and owner-controlled configuration.
+
+## 29 Oct 2026 — API hosting progress (latest follow-up)
+
+- Added a Node HTTP adapter for the existing Worker API and deployed a separate Render free web service: `https://research-to-code-api.onrender.com` (dashboard: `https://dashboard.render.com/web/srv-dbhld12jnfac73aab0a0`).
+- Added a minimal `GET /health` liveness route that returns only the service name/status; it intentionally does not claim that Supabase, AI or payment dependencies are healthy.
+- The API service has `SUPABASE_URL`, `ALLOWED_ORIGIN`, `AI_ENABLED=false`, `PAYMENTS_ENABLED=false`, and `PAYMENT_MODE=test`. The owner still must set `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` in the API service environment; the latter must be a Secret. Frontend `API_BASE` is intentionally not wired until those keys are present.
+- Latest GitHub Actions on revision `764a9c240284d14e3afc77cdb9139ccb15c2436c`: both workflows passed. The Worker test suite now includes a health-endpoint assertion.
+- Render reported the API process started successfully on port 10000 and the environment-variable deployment reached `live`. Direct external HTTP verification from this execution environment was unavailable, so the public `/health` URL still needs an owner/browser smoke check.
+- **Still not ready for customer launch:** Supabase schema/Auth not confirmed in the live project; API service-role and anon keys not set; frontend-to-API wiring intentionally pending; AI provider not selected/configured; Razorpay test credentials/webhook not configured or end-to-end tested; security response headers and Android Chrome not independently verified; Privacy/Terms still contain operator/contact placeholders. Do not accept customer payments.
+
