@@ -4,14 +4,27 @@ import assert from "node:assert/strict";
 const frontendUrl = process.env.FRONTEND_URL || "https://research-to-code.onrender.com/";
 const apiHealthUrl = process.env.API_HEALTH_URL || "https://research-to-code-api.onrender.com/health";
 
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 async function get(url, label) {
-  const response = await fetch(url, {
-    redirect: "follow",
-    signal: AbortSignal.timeout(20000),
-    headers: { "user-agent": "research-to-code-live-smoke/1.0" }
-  });
-  assert.equal(response.status, 200, label + " should return HTTP 200, got " + response.status);
-  return response;
+  let lastError;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const response = await fetch(url, {
+        redirect: "follow",
+        signal: AbortSignal.timeout(30000),
+        headers: { "user-agent": "research-to-code-live-smoke/1.0" }
+      });
+      if (response.status === 200) return response;
+      lastError = new Error(label + " should return HTTP 200, got " + response.status);
+      await response.body?.cancel().catch(() => {});
+      if (response.status < 500 && response.status !== 429) throw lastError;
+    } catch (error) {
+      lastError = error;
+    }
+    if (attempt < 3) await sleep(8000);
+  }
+  throw lastError || new Error(label + " failed without a response");
 }
 
 const frontend = await get(frontendUrl, "Frontend");
