@@ -97,7 +97,10 @@ const AI_FEATURES = {
   summary: { system: "You are a careful research assistant. Summarize the supplied research paper text. Separate claims, methods, findings, limitations, and open questions. Do not invent details; state when the excerpt is insufficient." },
   explain: { system: "Explain the research methods, variables, and equations from the supplied paper excerpt in clear English. Preserve mathematical notation when possible. Mark uncertain OCR/extraction and never invent missing equations." },
   improve: { system: "Review the supplied code for correctness, clarity, performance, and security. Return (1) key issues, (2) an improved complete version in a fenced code block, and (3) explanations and caveats. Do not claim to have run the code." },
-  tests: { system: "Generate meaningful pytest tests for the supplied Python code, including edge cases and expected behavior. Return only tests in a Python code block plus brief assumptions. Do not claim they were executed." }
+  tests: { system: "Generate meaningful pytest tests for the supplied Python code, including edge cases and expected behavior. Return only tests in a Python code block plus brief assumptions. Do not claim they were executed." },
+  claims: { system: "Perform an evidence audit. From the research excerpt, identify concrete claims and label each as paper-stated, supported by provided code, covered by a specific provided test, contradicted by test output, or unverified. Cite short exact phrases from the supplied excerpt where possible. Never say a test reproduces scientific results unless the evidence explicitly demonstrates that. Clearly separate executed test output from AI inference. If no executed run is supplied, say so." },
+  compatibility: { system: "Compare Version A and Version B as a senior cross-runtime code reviewer. Identify behavioral differences, dependencies/imports, API assumptions, language/runtime version constraints, portability risks, likely integration conflicts, and tests needed. Do not assume either version came from a specific model unless stated. Do not claim both versions were executed. End with a short compatibility checklist." },
+  fix: { system: "Act as a senior debugging engineer. Inspect the current code and supplied tests/run output. Prioritize the smallest correct change, preserve existing behavior, and explain the root cause. Return a complete replacement implementation in one fenced Python code block, followed by a concise explanation and the exact tests to rerun. If evidence is insufficient, state assumptions. Never claim you executed the fix." }
 };
 async function aiRequest(env, user, b, cors) {
   if (env.AI_ENABLED !== "true" || !env.AI_API_URL || !env.AI_API_KEY || !env.AI_MODEL) return json({error:"AI is not configured. The owner must configure an AI provider on the backend."},503,cors);
@@ -105,19 +108,22 @@ async function aiRequest(env, user, b, cors) {
   const feature = String(b.feature || ""), spec = AI_FEATURES[feature];
   if (!spec) return json({error:"Unknown AI feature."},400,cors);
   const text = String(b.text || ""), code = String(b.code || ""), tests = String(b.tests || "");
-  if (text.length > 18000 || code.length > 12000 || tests.length > 4000 || text.length + code.length + tests.length > 22000) return json({error:"Input is too long. Shorten the excerpt or code and try again."},413,cors);
-  if ((feature === "summary" || feature === "explain") && text.trim().length < 80) return json({error:"Please provide readable paper text first."},400,cors);
-  if ((feature === "improve" || feature === "tests") && code.trim().length < 10) return json({error:"Please provide code first."},400,cors);
+  if (text.length > 18000 || code.length > 12000 || tests.length > 4000 || text.length + code.length + tests.length > 34000) return json({error:"Input is too long. Shorten the excerpt or code and try again."},413,cors);
+  if ((feature === "summary" || feature === "explain" || feature === "claims") && text.trim().length < 80) return json({error:"Please provide readable paper text first."},400,cors);
+  if ((feature === "improve" || feature === "tests" || feature === "fix" || feature === "compatibility") && code.trim().length < 10) return json({error:"Please provide code first."},400,cors);
   const ent = await rows(await db(env,"entitlements?select=plan_id,expires_at&user_id=eq."+q(user.id)));
   const premium = !!(ent[0] && Date.parse(ent[0].expires_at) > Date.now());
   const limit = premium ? 50 : 3;
   const chars = text.length + code.length + tests.length;
   const quota = await rows(await db(env,"rpc/consume_ai_quota",{method:"POST",body:JSON.stringify({p_user:user.id,p_feature:feature,p_limit:limit,p_input_chars:chars})}));
   if (quota !== true && !(Array.isArray(quota) && quota[0] === true)) return json({error:"Monthly AI limit reached. Free accounts get 3 requests per month; Premium accounts get 50."},429,cors);
-  const content = feature === "summary" || feature === "explain" ? text : "CODE:\n"+code+(tests?"\n\nEXISTING TESTS:\n"+tests:"");
+  const content = (feature === "summary" || feature === "explain") ? text
+      : feature === "claims" ? "RESEARCH EXCERPT:\n" + text + "\n\nCODE VERSIONS:\n" + code + "\n\nTESTS AND RUN EVIDENCE:\n" + tests
+      : feature === "compatibility" ? code + "\n\nTESTS / CONTEXT:\n" + tests
+      : "CODE:\n" + code + (tests ? "\n\nEXISTING TESTS AND RUN EVIDENCE:\n" + tests : "");
   const controller = new AbortController(), timer = setTimeout(()=>controller.abort(),25000);
   try {
-    const res = await fetch(env.AI_API_URL,{method:"POST",headers:{"content-type":"application/json","authorization":"Bearer "+env.AI_API_KEY},body:JSON.stringify({model:env.AI_MODEL,temperature:0.2,max_tokens:1800,messages:[{role:"system",content:spec.system},{role:"user",content:content}] }),signal:controller.signal});
+    const res = await fetch(env.AI_API_URL,{method:"POST",headers:{"content-type":"application/json","authorization":"Bearer "+env.AI_API_KEY},body:JSON.stringify({model:env.AI_MODEL,temperature:0.2,max_tokens:(feature === "claims" || feature === "compatibility" || feature === "fix") ? 2800 : 1800,messages:[{role:"system",content:spec.system},{role:"user",content:content}] }),signal:controller.signal});
     if(!res.ok) { console.error("AI provider status",res.status); return json({error:res.status===429?"AI provider is busy or rate-limited. Try later.":"AI provider request failed. Check provider configuration."},502,cors); }
     const data=await res.json(), output=data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
     if(typeof output!=="string" || !output.trim()) return json({error:"AI provider returned no usable answer."},502,cors);
