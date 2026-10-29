@@ -23,7 +23,7 @@ ok('Every table the Worker touches exists ('+tables.join(', ')+')',tables.length
 ok('grant_order exists with the parameters the Worker sends',sql.includes('function public.grant_order(p_order text, p_payment text)')&&wk.includes('p_order')&&wk.includes('p_payment'));
 ok('grant_order is callable only by the service role',/revoke all on function public\.grant_order\(text, text\) from public, anon, authenticated/.test(sql)&&/grant execute on function public\.grant_order\(text, text\) to service_role/.test(sql));
 ok('Row-level security is on for all 4 tables',['plans','orders','entitlements','webhook_events'].every(t=>sql.includes('alter table public.'+t+' enable row level security')));
-ok('Users can only read their own orders and entitlement',/policy "users read own orders"[^;]*auth\.uid\(\) = user_id/.test(sql)&&/policy "users read own entitlement"[^;]*auth\.uid\(\) = user_id/.test(sql));
+ok('Users can only read their own orders and entitlement',/policy "users read own orders"[^;]*\\(select auth\\.uid\\(\\)\\) = user_id/.test(sql)&&/policy "users read own entitlement"[^;]*\\(select auth\\.uid\\(\\)\\) = user_id/.test(sql));
 ok('Browser cannot write to any table',/revoke insert, update, delete on public\.plans, public\.orders, public\.entitlements, public\.webhook_events from anon, authenticated/.test(sql)&&!/create policy[^;]*for (insert|update|delete)/.test(sql));
 ok('Website contains no server secret names',!/SERVICE_ROLE_KEY|KEY_SECRET|WEBHOOK_SECRET/.test(idx));
 ok('Website settings ship empty and are documented',/var CFG=\{SUPABASE_URL:"",SUPABASE_ANON_KEY:"",API_BASE:"",RAZORPAY_KEY_ID:"",PAYMENTS_ENABLED:false,AI_ENABLED:false\}/.test(idx)&&['SUPABASE_URL','SUPABASE_ANON_KEY','API_BASE','PAYMENTS_ENABLED'].every(k=>setup.includes(k)));
