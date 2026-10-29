@@ -1,0 +1,10 @@
+Local test results
+
+Status: Not independently verified in this GitHub upload session.
+Required before launch:
+- Run the repository test suite.
+- Validate worker syntax and package configuration.
+- Test index.html in a browser.
+- Test authentication and database integration.
+- Verify privacy, terms, manifest, service worker, and mobile layout.
+Do not treat this checklist as a passing test report until tests are actually run.
