@@ -18,7 +18,7 @@ const server = createServer(async (incoming, outgoing) => {
       size += chunk.length;
       if (size > MAX_BODY_BYTES) {
         send(outgoing, 413, { error: "Request too large." });
-        incoming.destroy();
+        incoming.resume();
         return;
       }
       chunks.push(chunk);
