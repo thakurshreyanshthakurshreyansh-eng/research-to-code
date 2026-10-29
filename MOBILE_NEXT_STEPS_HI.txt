@@ -1,0 +1,8 @@
+मोबाइल से आगे के चरण
+
+1. GitHub में repository की फाइलें जाँचें।
+2. index.html और बाकी सभी मूल फाइलें ZIP से अपलोड करें।
+3. Worker के लिए आवश्यक environment variables और secrets सेट करें।
+4. Supabase schema चलाएँ और authentication/configuration जाँचें।
+5. मोबाइल और desktop दोनों पर login, challenge flow, pricing और privacy pages टेस्ट करें।
+6. सभी जाँच पूरी होने के बाद ही Render पर deploy करें।
