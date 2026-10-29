@@ -12,6 +12,7 @@ url = os.environ.get("SUPABASE_URL", "").strip()
 key = os.environ.get("SUPABASE_ANON_KEY", "").strip()
 api_base = os.environ.get("API_BASE", "").strip()
 razorpay_key_id = os.environ.get("RAZORPAY_KEY_ID", "").strip()
+ai_enabled = os.environ.get("AI_ENABLED", "").strip().lower() == "true"
 
 if not url or not key:
     raise SystemExit("Build blocked: set SUPABASE_URL and SUPABASE_ANON_KEY in the hosting environment.")
@@ -27,6 +28,8 @@ if api_base:
     api = urlparse(api_base)
     if api.scheme != "https" or not api.hostname or not (api.hostname.endswith(".workers.dev") or api.hostname == "research-to-code-api.onrender.com") or api.path not in ("", "/") or api.query or api.fragment:
         raise SystemExit("Build blocked: API_BASE must be the configured Render API or a Cloudflare Workers HTTPS origin with no path/query.")
+if ai_enabled and not api_base:
+    raise SystemExit("Build blocked: AI_ENABLED=true requires API_BASE; configure the backend AI provider separately.")
 if razorpay_key_id and not razorpay_key_id.startswith("rzp_test_"):
     raise SystemExit("Build blocked: only a Razorpay TEST key ID is accepted by this build.")
 
@@ -39,9 +42,11 @@ replacement = (
     ",RAZORPAY_KEY_ID:" + json.dumps(razorpay_key_id) +
     ',PAYMENTS_ENABLED:false,AI_ENABLED:false};'
 )
+if ai_enabled:
+    replacement = replacement.replace("AI_ENABLED:false", "AI_ENABLED:true")
 source, cfg_count = re.subn(pattern, lambda _: replacement, source, count=1)
 source, demo_count = re.subn(r'var DEMO_PREVIEW_BUILD=true;', 'var DEMO_PREVIEW_BUILD=false;', source, count=1)
 if cfg_count != 1 or demo_count != 1:
     raise SystemExit("Build blocked: expected safe preview configuration markers were not found; no deploy config written.")
 index_path.write_text(source, encoding="utf-8")
-print("Configured public Supabase/optional Worker client settings. AI and payments remain disabled.")
+print("Configured public Supabase/optional Worker client settings. " + ("AI UI enabled; verify backend provider credentials before use. " if ai_enabled else "AI remains disabled. ") + "Payments remain disabled.")
