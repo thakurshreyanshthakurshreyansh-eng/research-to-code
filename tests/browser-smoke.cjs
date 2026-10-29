@@ -137,8 +137,8 @@ async function downloadBytes(download) {
       // The local reports must stay honest about what was and was not executed.
       if (viewport.name === "mobile") {
         await page.locator('#nav button[data-t="code"]').click();
-        await page.locator("#before").fill("import os\\ndef f(): return os.name");
-        await page.locator("#after").fill("import json\\ndef f(): return json.dumps(1)");
+        await page.locator("#before").fill("import os\ndef f(): return os.name");
+        await page.locator("#after").fill("import json\ndef f(): return json.dumps(1)");
         await page.locator('#nav button[data-t="proof"]').click();
         await page.locator("#tests").fill("def test_f(): assert True");
         await page.evaluate(() => {
@@ -182,7 +182,7 @@ async function downloadBytes(download) {
         assert.ok(diagnosis.diagnosis.hints.some(h => h.includes("Assertion failed")));
         assert.equal(diagnosis.diagnosis.codeMatchesCurrent, true);
         assert.equal(diagnosis.diagnosis.testsMatchCurrent, true);
-        assert.equal(await page.locator("#after").inputValue(), "import json\\ndef f(): return json.dumps(1)", "local diagnosis must not silently change code");
+        assert.equal(await page.locator("#after").inputValue(), "import json\ndef f(): return json.dumps(1)", "local diagnosis must not silently change code");
 
         const zipDownloadPromise = page.waitForEvent("download");
         await page.locator("#labHandoff").click();
