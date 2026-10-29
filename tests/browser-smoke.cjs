@@ -37,6 +37,7 @@ const { chromium } = require("playwright");
       await page.locator("#resBody").waitFor({ state: "visible" });
       const diffState = await page.evaluate(() => ({ before: document.querySelector("#before").value, after: document.querySelector("#after").value, added: document.querySelector("#nAdd").textContent, removed: document.querySelector("#nDel").textContent, modified: document.querySelector("#nMod").textContent, output: document.querySelector("#cmpBox").textContent, children: document.querySelector("#cmpBox").children.length }));
       assert.ok(Number(diffState.added) + Number(diffState.removed) + Number(diffState.modified) > 0 && diffState.children > 0, viewport.name + ": diff output should not be empty: " + JSON.stringify(diffState));
+      await page.locator('#nav button[data-t="code"]').click();
       await page.locator("#ex").click();
       assert.ok((await page.locator("#after").inputValue()).length > 0, viewport.name + ": example pair should load");
       await page.locator("#cmp").click();
