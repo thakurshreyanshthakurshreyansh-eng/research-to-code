@@ -36,7 +36,14 @@ Note: Supabase's built-in email sender is limited and meant for testing. Real us
 5. The Worker also exposes authenticated `/api/account/export` and `/api/account/delete` endpoints. Export returns up to 1,000 recent orders, the current entitlement and up to 5,000 AI-usage metadata rows; the response declares these limits. Deletion requires `DELETE_MY_ACCOUNT`, uses the Supabase Admin API, and cascades app rows linked to `auth.users`. Test both on a disposable test account first. Deletion does not issue refunds or erase external-provider records.
 
 ## D. Website
-1. In index.html, fill the CFG block: SUPABASE_URL, SUPABASE_ANON_KEY, API_BASE (Worker address). Leave PAYMENTS_ENABLED false.
+
+### Render static-site build configuration (recommended)
+- Keep `index.html` committed with blank client settings; do not commit project credentials to the public repository.
+- In Render > the `research-to-code` static site > Environment, set `SUPABASE_URL` and `SUPABASE_ANON_KEY` to the Supabase project URL and publishable key. These are public client settings; never add a database password, `sb_secret_`, or `service_role` key.
+- In Render > Settings > Build Command, set `python3 scripts/configure_site.py`. Keep Publish Directory as `.`. The build script injects the client settings only into Render's temporary build copy and disables hosted demo entry. It deliberately leaves AI and payments off.
+- Save changes and deploy. If the build fails, read the build log; the script intentionally blocks missing or unsafe values.
+
+1. For non-Render/manual hosting, fill the CFG block only in the deployment copy: SUPABASE_URL, SUPABASE_ANON_KEY, API_BASE (Worker address). Leave PAYMENTS_ENABLED false.
 2. A baseline set of security headers and a starter Content-Security-Policy are in `_headers` for Cloudflare Pages. The CSP permits inline scripts and WebAssembly evaluation for the current single-file app/Pyodide, but narrows `connect-src` to expected CDN, Supabase, Worker and Razorpay host patterns. Verify browser console/network behavior after deployment; add only the exact custom API/auth origins you use. **GitHub Pages ignores `_headers`**; do not use it for a public launch unless equivalent headers are supplied by another supported layer.
 3. Upload `index.html`, `privacy.html`, `terms.html`, `manifest.webmanifest`, `icon-192.png`, `icon-512.png`, `sw.js` and host configuration only after completing and reviewing the policy pages. PWA installability requires HTTPS and must be tested on the deployed origin. The included Privacy/Terms pages contain placeholders and are not ready for a public launch.
 
