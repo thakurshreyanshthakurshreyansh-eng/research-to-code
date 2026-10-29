@@ -1,6 +1,7 @@
 import { pathToFileURL } from "node:url";
 
-const API_BASE = (process.env.RENDER_API_BASE || "https://api.render.com/v1").replace(/\\/$/, "");
+const API_BASE_RAW = process.env.RENDER_API_BASE || "https://api.render.com/v1";
+const API_BASE = API_BASE_RAW.endsWith("/") ? API_BASE_RAW.slice(0, -1) : API_BASE_RAW;
 const SERVICE_ID = process.env.RENDER_FRONTEND_SERVICE_ID || "srv-dbhk0o8473hc73a6u22g";
 
 export const REQUIRED_HEADERS = Object.freeze([
@@ -82,7 +83,7 @@ export async function configureRenderHeaders({
   if (typeof apiKey !== "string" || !apiKey.trim()) throw new Error("RENDER_API_KEY is required; no changes were made.");
   if (typeof serviceId !== "string" || !/^srv-[a-zA-Z0-9]+$/.test(serviceId)) throw new Error("RENDER_FRONTEND_SERVICE_ID is invalid; no changes were made.");
   if (typeof fetchImpl !== "function") throw new Error("A fetch implementation is required.");
-  const base = apiBase.replace(/\\/$/, "");
+  const base = apiBase.endsWith("/") ? apiBase.slice(0, -1) : apiBase;
   const current = await fetchAllRules(fetchImpl, apiKey, serviceId, base);
   const desiredKeys = new Set(REQUIRED_HEADERS.map(keyOf));
   const groups = new Map();
