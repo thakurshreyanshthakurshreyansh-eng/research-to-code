@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const { chromium } = require("playwright");
 
 function makePdf(text) {
-  const escaped = text.replace(/\\/g, "\\\\").replace(/\\(/g, "\\(").replace(/\\)/g, "\\)");
+  const escaped = text.replace(/[\\()]/g, ch => "\\" + ch);
   const stream = "BT /F1 12 Tf 72 720 Td (" + escaped + ") Tj ET\n";
   const objects = [
     "<< /Type /Catalog /Pages 2 0 R >>",
