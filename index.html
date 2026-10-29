@@ -157,6 +157,16 @@ button{min-height:44px}
 
 .priceLine{display:flex;align-items:baseline;gap:5px;margin:10px 0 12px}.priceLine strong{font-size:32px;letter-spacing:-1px}.lang-en{display:none}html[lang="en"] .lang-en{display:inline}html[lang="en"] .lang-hi{display:none}html[lang="hi"] .lang-hi{display:inline}
 
+
+/* Research Proof & Compatibility Lab */
+.labGrid{display:grid;grid-template-columns:1fr;gap:12px}
+.labCard{border:1px solid var(--line);border-radius:16px;padding:16px;background:var(--card)}
+.labCard h2{margin:0 0 6px;font-size:18px}
+.labTag{display:inline-block;font-size:11px;font-weight:750;letter-spacing:.04em;padding:4px 8px;border-radius:99px;background:var(--sugBg);color:var(--mut);margin-bottom:8px}
+.labOutput{white-space:pre-wrap;overflow-wrap:anywhere;max-height:480px;overflow:auto;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);font:13px/1.55 ui-monospace,Menlo,Consolas,monospace}
+.labActions{display:grid;gap:8px;margin-top:12px}
+@media(min-width:760px){.labGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.labWide{grid-column:1/-1}.labActions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 </style>
 </head>
 <body>
@@ -286,6 +296,62 @@ button{min-height:44px}
     <h3>Generate tests</h3><p class="note">Create pytest tests for edge cases based on the code you provide.</p><button class="btn alt" data-ai="tests" type="button">Generate pytest tests</button></div>
   <div id="aiStatus" class="toast" role="status"></div><div class="card"><h3>AI output</h3><div id="aiOutput" class="txt aiOut mut">No output yet.</div><button class="btn alt" id="aiCopy" type="button" style="margin-top:10px">Copy AI output</button><button class="btn alt" id="aiUseCode" type="button" style="margin-top:10px">Use AI code as After code</button><button class="btn alt" id="aiUseTests" type="button" style="margin-top:10px">Use AI output as Proof tests</button></div>
   <div class="card"><h3>Usage</h3><p id="aiUsage" class="mut" style="margin:0">AI usage is unavailable until the backend and provider are configured.</p></div>
+</section>
+
+
+<section class="tab" id="lab">
+  <h1>Proof & Compatibility Lab</h1>
+  <p class="mut">पाँच काम एक जगह: असली test evidence, रिसर्च-claim audit, GPT/Claude से मिले code की compatibility जाँच, fix के बाद retest, और डाउनलोड करने योग्य project ZIP। AI analysis तभी चलेगा जब backend/provider configured हो और AI data-sharing consent दिया गया हो।</p>
+  <div class="card">
+    <h3>पहले डेटा और evidence</h3>
+    <p class="note">यहाँ PDF का निकाला गया text, Before/After code, tests और हाल का test output इस्तेमाल हो सकता है। केवल tests पास होने से रिसर्च पेपर के वैज्ञानिक नतीजे साबित नहीं होते। कोई भी AI report स्वयं executed test नहीं मानी जाएगी।</p>
+    <label class="consent"><input id="labConsent" type="checkbox"><span>मैं समझता/समझती हूँ कि AI analysis चलाने पर चुना गया PDF text, code और tests configured AI provider को भेजे जाएंगे।</span></label>
+    <p id="labStatus" class="toast" role="status"></p>
+  </div>
+  <div class="labGrid">
+    <div class="labCard">
+      <span class="labTag">01 · EVIDENCE</span>
+      <h2>Research-to-Code Proof Pack</h2>
+      <p class="note">PDF excerpt, current code, tests और latest real run का status/time/output एक evidence report में export करें।</p>
+      <button class="btn" id="labProofPack" type="button">Build Proof Pack (.json)</button>
+    </div>
+    <div class="labCard">
+      <span class="labTag">02 · CLAIM AUDIT</span>
+      <h2>AI Claims vs Real Tests</h2>
+      <p class="note">पेपर के दावों, code behavior, test coverage और unverified items को अलग-अलग सूचीबद्ध करें।</p>
+      <button class="btn" id="labClaims" data-lab-ai="claims" type="button">Audit claims & evidence</button>
+    </div>
+    <div class="labCard">
+      <span class="labTag">03 · COMPATIBILITY</span>
+      <h2>GPT–Claude Compatibility Lab</h2>
+      <p class="note">Code tab में Before और After में दोनों मॉडल से मिले versions रखें। Dependencies, API assumptions, runtime risks और test coverage की तुलना होगी। यह provider-to-provider live benchmark नहीं है।</p>
+      <button class="btn" id="labCompat" data-lab-ai="compatibility" type="button">Analyze compatibility</button>
+      <button class="btn alt" data-go="code" type="button" style="margin-top:8px">Open Before / After code</button>
+    </div>
+    <div class="labCard">
+      <span class="labTag">04 · ITERATIVE FIX</span>
+      <h2>Fix → Retest → Compare</h2>
+      <p class="note">AI मौजूदा code और test failure देखकर suggested fix बनाएगा। फिर Apply & Retest से नया code असल browser pytest runner में चलाएँ और पुराने run से तुलना करें।</p>
+      <button class="btn" id="labFix" data-lab-ai="fix" type="button">Suggest a test-driven fix</button>
+      <button class="btn alt" id="labApplyFix" type="button" style="margin-top:8px" disabled>Apply fix & retest</button>
+    </div>
+    <div class="labCard labWide">
+      <span class="labTag">05 · HANDOFF</span>
+      <h2>One-Click Project Handoff</h2>
+      <p class="note">Source, tests, README, dependency notes और proof report एक ZIP में pack करें। ZIP आपके browser में locally बनती है; code server पर execute या upload नहीं होता।</p>
+      <button class="btn" id="labHandoff" type="button">Export complete project (.zip)</button>
+      <p id="labZipStatus" class="note" role="status"></p>
+    </div>
+    <div class="labCard labWide">
+      <h2>Lab report / AI suggestion</h2>
+      <p class="note">AI suggestions को evidence नहीं माना जाएगा जब तक code और tests वास्तव में run न हों।</p>
+      <pre id="labOutput" class="labOutput">अभी कोई रिपोर्ट नहीं बनी है।</pre>
+      <div class="labActions">
+        <button class="btn alt" id="labCopy" type="button">Copy report</button>
+        <button class="btn alt" id="labDownload" type="button">Download report (.txt)</button>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section class="tab" id="account">
@@ -492,9 +558,9 @@ applyTheme(getTheme());
 
 
 /* navigation */
-var ICONS={home:"M3 10.5 12 3l9 7.5 M5 9v11h14V9 M9 20v-6h6v6",ai:"M12 3v3 M12 18v3 M3 12h3 M18 12h3 M5.6 5.6l2.1 2.1 M16.3 16.3l2.1 2.1 M18.4 5.6l-2.1 2.1 M7.7 16.3l-2.1 2.1 M9 9h6v6H9z",paper:"M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z M14 3v5h5 M9 13h6 M9 17h6",code:"M16 18l6-6-6-6 M8 6l-6 6 6 6",result:"M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11",proof:"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",plans:"M12 2l9 5-9 5-9-5z M3 12l9 5 9-5 M3 17l9 5 9-5",launch:"M4 19h16 M6 16V9 M12 16V5 M18 16v-4"};
-var NAMES={home:"होम",paper:"PDF",code:"कोड",proof:"टेस्ट",launch:"लॉन्च"};
-var NAV_EN={home:"Home",paper:"PDF",code:"Code",proof:"Tests",launch:"Launch"};
+var ICONS={home:"M3 10.5 12 3l9 7.5 M5 9v11h14V9 M9 20v-6h6v6",ai:"M12 3v3 M12 18v3 M3 12h3 M18 12h3 M5.6 5.6l2.1 2.1 M16.3 16.3l2.1 2.1 M18.4 5.6l-2.1 2.1 M7.7 16.3l-2.1 2.1 M9 9h6v6H9z",paper:"M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z M14 3v5h5 M9 13h6 M9 17h6",code:"M16 18l6-6-6-6 M8 6l-6 6 6 6",result:"M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11",proof:"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",plans:"M12 2l9 5-9 5-9-5z M3 12l9 5 9-5 M3 17l9 5 9-5",launch:"M4 19h16 M6 16V9 M12 16V5 M18 16v-4",lab:"M4 5h16v14H4z M8 9h8 M8 12h5 M8 15h3"};
+var NAMES={home:"होम",paper:"PDF",code:"कोड",proof:"टेस्ट",lab:"Proof Lab",launch:"लॉन्च"};
+var NAV_EN={home:"Home",paper:"PDF",code:"Code",proof:"Tests",lab:"Proof Lab",launch:"Launch"};
 var nav=$("nav"),currentPage="home",currentLang="hi";
 function renderNav(){
   nav.innerHTML="";
@@ -546,6 +612,7 @@ function go(id){
   if(id==="proof")refreshProof();
   if(id==="account")renderAccount();
   if(id==="ai")refreshAIStatus();
+  if(id==="lab")refreshLabStatus();
   if(id==="plans")renderPlans();
   window.scrollTo({top:0,behavior:"auto"});
 }
@@ -566,6 +633,177 @@ else document.querySelectorAll("[data-go]").forEach(function(b){b.onclick=functi
   var ex=$("launchExport");if(ex)ex.addEventListener("click",function(){var out={product:"Research to Code",exported_at:new Date().toISOString(),notice:"Checklist only; checked items are user-confirmed and are not proof of deployment.",items:boxes.map(function(b){return{id:b.dataset.launch,label:b.parentElement.textContent.trim(),done:b.checked}})};var blob=new Blob([JSON.stringify(out,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="research-to-code-launch-checklist.json";a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000);$("launchMsg").textContent="Checklist डाउनलोड हो गई।"});
   var reset=$("launchReset");if(reset)reset.addEventListener("click",function(){if(!confirm("सभी checklist ticks हटाने हैं?"))return;boxes.forEach(function(b){b.checked=false});try{localStorage.removeItem(key)}catch(_){}update();$("launchMsg").textContent="Checklist रीसेट हो गई।"});
 })();
+
+
+/* Research Proof & Compatibility Lab: evidence is separated from AI suggestions. */
+var labBusy=false, labLastFeature="", labLastOutput="";
+function latestExecutedRun(){
+  for(var i=runs.length-1;i>=0;i--)if(runs[i]&&runs[i].ran)return runs[i];
+  return null;
+}
+function labEvidence(){
+  var r=latestExecutedRun();
+  return {
+    generatedAt:new Date().toISOString(),
+    pdfTextChars:pdfText.length,
+    pdfExcerpt:pdfText.slice(0,18000),
+    beforeCode:$("before").value.slice(0,12000),
+    afterCode:$("after").value.slice(0,12000),
+    tests:$("tests").value.slice(0,4000),
+    latestRun:r?{at:r.at||null,target:r.target||null,ran:!!r.ran,status:r.status||"unknown",exit:r.exit,ms:r.ms,counts:r.counts||null,output:String(r.out||"").slice(0,8000),error:String(r.err||"").slice(0,4000),codeMatchesCurrent:r.code===$((r.target==="before")?"before":"after").value,testsMatchCurrent:r.tests===$("tests").value}:null,
+    notice:"A passing test only supports the behavior asserted by that test; it does not independently reproduce a paper's scientific results."
+  };
+}
+function refreshLabStatus(){
+  var ready=!!(CFG.AI_ENABLED&&CFG.API_BASE&&cfgOk()&&session);
+  ["labClaims","labCompat","labFix"].forEach(function(id){var b=$(id);if(b)b.disabled=labBusy});
+  if(!ready&&!labBusy)say("labStatus","Local claim-evidence और compatibility checks उपलब्ध हैं। AI-powered fix के लिए sign-in, API और AI provider configuration चाहिए।");
+  else if(ready&&!labBusy)say("labStatus","AI endpoint configured है। AI चलाने से पहले ऊपर consent checkbox चुनें।");
+}
+function runLocalLabAnalysis(feature){
+  var ev=labEvidence(), report={mode:"local-only",generatedAt:new Date().toISOString(),note:"This report inventories evidence; it does not verify scientific truth and does not replace AI review."};
+  if(feature==="fix"){
+    report.title="Fix → Retest — local failure diagnosis";
+    var r=ev.latestRun,log=((r&&r.error)||"")+"\\n"+((r&&r.output)||"");
+    var hints=[];
+    if(!r)hints.push("अभी कोई test run नहीं है: पहले Proof tab में tests चलाएँ ताकि वास्तविक failure मिले।");
+    else if(!r.ran)hints.push("Latest run execute नहीं हुआ; browser runner का startup error देखें।");
+    else if(r.status==="passed")hints.push("Latest recorded run पास हुआ। नया failure reproduce करें या अतिरिक्त edge-case tests जोड़ें।");
+    else if(/SyntaxError|IndentationError/.test(log))hints.push("Python syntax/indentation error: reported line के आसपास brackets, colons, quotes और indentation जाँचें।");
+    if(/ModuleNotFoundError|ImportError/.test(log))hints.push("Import error: module का नाम, runtime में उसकी उपलब्धता और dependency assumptions जाँचें।");
+    if(/AssertionError/.test(log))hints.push("Assertion failed: expected और actual values की तुलना करें; test को सिर्फ पास कराने के लिए कमजोर न करें।");
+    if(/NameError/.test(log))hints.push("NameError: variable/function spelling, scope और definition order जाँचें।");
+    if(/TypeError/.test(log))hints.push("TypeError: argument count, value types और None/empty values वाले edge cases जाँचें।");
+    if(/timed out|timeout/i.test((r&&r.status)||""))hints.push("Timeout: loop termination और algorithmic complexity जाँचें; छोटा reproducible test चलाएँ।");
+    if(!hints.length)hints.push("Failure log में पहला traceback/error पढ़ें, उसे छोटा reproducible case बनाएं, एक बदलाव करें और पूरा test suite फिर चलाएँ।");
+    report.latestRun=r;
+    report.diagnosis={status:r?r.status:"not-run",ran:!!(r&&r.ran),codeMatchesCurrent:!!(r&&r.codeMatchesCurrent),testsMatchCurrent:!!(r&&r.testsMatchCurrent),hints:hints,rawError:String((r&&r.error)||"").slice(0,4000),rawOutput:String((r&&r.output)||"").slice(0,8000)};
+    report.nextAction="Local diagnosis cannot safely invent or apply a source-code patch. Configure the AI provider for generated fixes, then review and retest the suggested code.";
+  }else if(feature==="claims"){
+    report.title="Claims vs Real Tests — local evidence inventory";
+    report.paper={extractedTextAvailable:ev.pdfTextChars>=80,characters:ev.pdfTextChars,claimExtraction:"Not performed locally; AI provider is not configured."};
+    report.code={beforePresent:ev.beforeCode.trim().length>0,afterPresent:ev.afterCode.trim().length>0};
+    report.tests={present:ev.tests.trim().length>0,characters:ev.tests.length,executedAgainstCurrentCode:!!(ev.latestRun&&ev.latestRun.ran&&ev.latestRun.codeMatchesCurrent&&ev.latestRun.testsMatchCurrent)};
+    report.latestRun=ev.latestRun;
+    report.verdict="No scientific claim is marked verified by this local-only report. Run tests and use configured AI analysis for a deeper evidence audit.";
+  }else{
+    var imports=function(code){return (code.match(/^\s*(?:from\s+([\w.]+)\s+import|import\s+([\w., ]+))/gm)||[]).map(function(line){var m=/^\s*from\s+([\w.]+)\s+import|^\s*import\s+([\w., ]+)/.exec(line);return (m[1]||m[2]||"").split(",").map(function(v){return v.trim().split(/\s+as\s+/)[0].split(".")[0]}).filter(Boolean)}).reduce(function(a,b){return a.concat(b)},[]).filter(function(v,i,a){return a.indexOf(v)===i}).sort()};
+    var a=imports(ev.beforeCode),b=imports(ev.afterCode),all=Array.from(new Set(a.concat(b))).sort();
+    report.title="GPT–Claude Compatibility — local static comparison";
+    report.versions={before:{characters:ev.beforeCode.length,lines:ev.beforeCode?ev.beforeCode.split("\n").length:0,imports:a},after:{characters:ev.afterCode.length,lines:ev.afterCode?ev.afterCode.split("\n").length:0,imports:b}};
+    report.imports={onlyBefore:a.filter(function(v){return !b.includes(v)}),onlyAfter:b.filter(function(v){return !a.includes(v)}),combined:all};
+    report.tests={present:ev.tests.trim().length>0,latestRun:ev.latestRun};
+    report.nextChecks=["Confirm runtime/language versions and pinned dependency versions.","Run the same tests against both versions in the Tests tab.","Review API contracts, environment variables, and side effects.","AI-assisted integration review is unavailable until the backend/provider is configured."];
+  }
+  labLastFeature=feature;labLastOutput=JSON.stringify(report,null,2);$("labOutput").textContent=labLastOutput;
+  say("labStatus","Local analysis complete. यह static evidence inventory है, AI review या scientific proof नहीं।");
+}
+async function askLabAI(feature){
+  if(labBusy)return;
+  if(!CFG.AI_ENABLED||!CFG.API_BASE||!cfgOk()||!session){runLocalLabAnalysis(feature);return}
+  if(!$("labConsent").checked){say("labStatus","पहले AI data-sharing consent चुनें।");return}
+  if(!sb||!session||!CFG.API_BASE||!CFG.AI_ENABLED){say("labStatus","AI-powered fix के लिए sign-in और configured backend/provider चाहिए।");return}
+  var ev=labEvidence(), text="", code="", tests="";
+  if(feature==="claims"){
+    if(ev.pdfExcerpt.trim().length<80){say("labStatus","पहले PDF पढ़ें या OCR चलाएँ; claim audit के लिए paper text चाहिए।");return}
+    text=ev.pdfExcerpt.slice(0,15000);
+    code=("CURRENT CODE:\n"+ev.afterCode+"\n\nBASELINE CODE:\n"+ev.beforeCode).slice(0,3000);
+    tests=ev.tests+"\n\nLATEST EXECUTED RUN EVIDENCE (not paper reproduction):\n"+JSON.stringify(ev.latestRun);
+  }else if(feature==="compatibility"){
+    if(ev.beforeCode.trim().length<10||ev.afterCode.trim().length<10){say("labStatus","Code tab में Before और After दोनों versions डालें।");return}
+    code="VERSION A (e.g. GPT-generated):\n"+ev.beforeCode+"\n\nVERSION B (e.g. Claude-generated):\n"+ev.afterCode;
+    tests=ev.tests;
+  }else if(feature==="fix"){
+    code="CURRENT AFTER CODE:\n"+(ev.afterCode||ev.beforeCode);
+    tests=ev.tests+"\n\nLATEST EXECUTED RUN EVIDENCE:\n"+JSON.stringify(ev.latestRun);
+    if(code.length<30){say("labStatus","पहले Code tab में code जोड़ें।");return}
+  }
+  if(code.length>12000){say("labStatus","दोनों code versions की कुल लंबाई 12,000 characters से अधिक है। छोटा करें और फिर कोशिश करें।");return}
+  if(tests.length>4000)tests=tests.slice(0,4000);
+  labBusy=true;labLastFeature=feature;labLastOutput="";$("labOutput").textContent="AI analysis चल रहा है…";refreshLabStatus();
+  try{
+    var ses=(await sb.auth.getSession()).data.session;if(!ses)throw new Error("Please sign in again.");
+    var resp=await fetch(CFG.API_BASE+"/api/ai",{method:"POST",headers:{authorization:"Bearer "+ses.access_token,"content-type":"application/json"},body:JSON.stringify({feature:feature,text:text,code:code,tests:tests,consent:true})});
+    var data;try{data=await resp.json()}catch(_){throw new Error("AI service returned an unreadable response.")}
+    if(!resp.ok)throw new Error(data.error||"AI request failed.");
+    labLastOutput=String(data.output||"No output returned.");
+    $("labOutput").textContent=labLastOutput;
+    say("labStatus","Analysis complete. यह AI analysis है, executed proof नहीं। Usage: "+data.used+" / "+data.limit);
+    $("labApplyFix").disabled=feature!=="fix"||!fencedCode(labLastOutput);
+  }catch(e){say("labStatus",e&&e.message?e.message:"AI request failed.");$("labOutput").textContent="Analysis failed: "+(e&&e.message?e.message:"Unknown error")}
+  finally{labBusy=false;refreshLabStatus();if(feature==="fix"&&fencedCode(labLastOutput))$("labApplyFix").disabled=false}
+}
+document.querySelectorAll("[data-lab-ai]").forEach(function(b){b.addEventListener("click",function(){askLabAI(b.dataset.labAi)})});
+$("labProofPack").onclick=function(){
+  var pack={format:"research-to-code-proof-pack",version:1,createdAt:new Date().toISOString(),evidence:labEvidence(),aiAnalysis:labLastOutput||null,verificationRules:{aiOutputIsExecutionEvidence:false,passingTestsProveOnlyAssertedBehavior:true,scientificReproductionRequiresDomainSpecificValidation:true}};
+  downloadBlob("research-to-code-proof-pack.json",new Blob([JSON.stringify(pack,null,2)],{type:"application/json"}));
+  $("labOutput").textContent=JSON.stringify(pack,null,2);say("labStatus","Proof Pack तैयार है। इसमें latest run तभी executed दिखेगा जब वास्तविक run record मौजूद हो।");
+};
+$("labCopy").onclick=function(){copyText($("labOutput").textContent,$("labStatus"))};
+$("labDownload").onclick=function(){downloadBlob("research-to-code-lab-report.txt",new Blob([$ ("labOutput").textContent],{type:"text/plain;charset=utf-8"}));say("labStatus","Report download शुरू हुआ।")};
+$("labApplyFix").onclick=function(){
+  var c=fencedCode(labLastOutput);
+  if(!c){say("labStatus","Suggested fix में fenced code block नहीं मिला; कुछ भी apply नहीं किया गया।");return}
+  $("after").value=c;target="after";
+  if(!$("tests").value.trim()){say("labStatus","पहले Proof tab में pytest tests जोड़ें, ताकि fix को वास्तविक tests से verify किया जा सके।");go("proof");return}
+  document.querySelectorAll("#tseg button").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.t==="after"))});
+  refreshProof();scheduleSave();go("proof");
+  say("runStatus","AI suggestion After code में रखी गई है; retest शुरू होगा।");
+  $("run").click();
+};
+function zipCrc32(bytes){
+  var crc=0xffffffff;
+  for(var i=0;i<bytes.length;i++){crc^=bytes[i];for(var j=0;j<8;j++)crc=(crc>>>1)^((crc&1)?0xedb88320:0)}
+  return (crc^0xffffffff)>>>0;
+}
+function zipDosStamp(d){
+  return {time:((d.getHours()&31)<<11)|((d.getMinutes()&63)<<5)|((Math.floor(d.getSeconds()/2))&31),
+    date:(((Math.max(1980,d.getFullYear())-1980)&127)<<9)|(((d.getMonth()+1)&15)<<5)|(d.getDate()&31)};
+}
+function makeZipBlob(files){
+  var enc=new TextEncoder(),local=[],central=[],offset=0,centralSize=0,stamp=zipDosStamp(new Date());
+  if(files.length>65535)throw new Error("Too many files for ZIP export.");
+  files.forEach(function(file){
+    var name=enc.encode(file.name),data=typeof file.data==="string"?enc.encode(file.data):file.data;
+    if(name.length>65535||data.length>0xffffffff)throw new Error("A ZIP entry is too large.");
+    var crc=zipCrc32(data),lh=new Uint8Array(30),lv=new DataView(lh.buffer);
+    lv.setUint32(0,0x04034b50,true);lv.setUint16(4,20,true);lv.setUint16(6,0x0800,true);lv.setUint16(8,0,true);
+    lv.setUint16(10,stamp.time,true);lv.setUint16(12,stamp.date,true);lv.setUint32(14,crc,true);
+    lv.setUint32(18,data.length,true);lv.setUint32(22,data.length,true);lv.setUint16(26,name.length,true);lv.setUint16(28,0,true);
+    local.push(lh,name,data);
+    var ch=new Uint8Array(46),cv=new DataView(ch.buffer);
+    cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint16(8,0x0800,true);
+    cv.setUint16(10,0,true);cv.setUint16(12,stamp.time,true);cv.setUint16(14,stamp.date,true);cv.setUint32(16,crc,true);
+    cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);cv.setUint16(28,name.length,true);cv.setUint16(30,0,true);
+    cv.setUint16(32,0,true);cv.setUint16(34,0,true);cv.setUint16(36,0,true);cv.setUint32(38,0,true);cv.setUint32(42,offset,true);
+    central.push(ch,name);centralSize+=ch.length+name.length;offset+=lh.length+name.length+data.length;
+  });
+  var end=new Uint8Array(22),ev=new DataView(end.buffer);
+  ev.setUint32(0,0x06054b50,true);ev.setUint16(4,0,true);ev.setUint16(6,0,true);
+  ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);ev.setUint32(12,centralSize,true);
+  ev.setUint32(16,offset,true);ev.setUint16(20,0,true);
+  return new Blob(local.concat(central,[end]),{type:"application/zip"});
+}
+$("labHandoff").onclick=function(){
+  var status=$("labZipStatus");status.textContent="";
+  try{
+    var ev=labEvidence(), files=[
+      {name:"README.md",data:"# Research to Code handoff\n\nThis bundle contains user-supplied research text, source code, tests, and available test evidence. Review everything before use.\n\n## Run locally\n1. Install Python 3.10 or newer.\n2. Install pytest with Python's package manager.\n3. Run pytest against tests/test_solution.py.\n\nThe included run report reflects only the recorded browser test run. It does not guarantee production readiness or reproduce scientific results.\n"},
+      {name:"research_excerpt.txt",data:ev.pdfExcerpt||"No extracted PDF text was available."},
+      {name:"solution.py",data:ev.afterCode||ev.beforeCode||"# Add implementation here\n"},
+      {name:"tests/test_solution.py",data:ev.tests||"# Add pytest tests here\n"},
+      {name:"proof-report.json",data:JSON.stringify({product:"Research to Code",createdAt:new Date().toISOString(),evidence:ev,aiAnalysis:labLastOutput||null,notice:"AI analysis is not execution evidence; tests only prove asserted behavior."},null,2)},
+      {name:"versions/before.py",data:ev.beforeCode||""},
+      {name:"versions/after.py",data:ev.afterCode||""},
+      {name:"dependencies.txt",data:"Dependency list is not automatically inferred as complete. Review imports and add pinned versions before production use.\npytest\n"}
+    ];
+    status.textContent="ZIP बनाया जा रहा है…";
+    var blob=makeZipBlob(files);
+    if(blob.size<22)throw new Error("Generated ZIP is unexpectedly empty.");
+    downloadBlob("research-to-code-project-handoff.zip",blob);
+    status.textContent="Project ZIP तैयार है। Dependencies को production में चलाने से पहले review/pin करें।";
+  }catch(e){status.textContent="ZIP export failed: "+(e&&e.message?e.message:"Unknown error")}
+};
 
 function copyText(t,msgEl){
   try{navigator.clipboard.writeText(t).then(function(){msgEl.textContent="Copied."},function(){msgEl.textContent="Could not copy. Touch and hold the text to select it."})}
