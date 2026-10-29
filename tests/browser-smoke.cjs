@@ -43,10 +43,15 @@ function makePdf(text) {
       await page.locator("#gateDemo").click();
       await page.locator("#gateScreen").waitFor({ state: "hidden" });
       await page.locator("#previewModeBanner").waitFor({ state: "visible" });
-      assert.ok(
-        await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 2),
-        viewport.name + ": home view should not overflow horizontally"
-      );
+      const homeLayout = await page.evaluate(() => ({
+        viewport: window.innerWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+        offenders: [...document.querySelectorAll("body *")].map(el => {
+          const r = el.getBoundingClientRect();
+          return { tag: el.tagName, id: el.id || "", className: String(el.className || "").slice(0, 80), left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width) };
+        }).filter(el => el.width > 0 && (el.right > window.innerWidth + 2 || el.left < -2)).sort((a,b) => b.right - a.right).slice(0, 12)
+      }));
+      assert.ok(homeLayout.scrollWidth <= homeLayout.viewport + 2, viewport.name + ": home view should not overflow horizontally: " + JSON.stringify(homeLayout));
 
       // Theme and language controls must update the page without a reload.
       const themeBefore = await page.locator("html").getAttribute("data-theme");
