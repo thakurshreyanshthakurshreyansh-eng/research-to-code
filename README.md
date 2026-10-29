@@ -25,6 +25,7 @@ Open `index.html` in a modern browser. If the browser's file preview disables Ja
 - Use Render Static Site for the frontend after this repository is connected.
 - A static-site host alone does not run `worker/worker.js`; deploy the API separately to a compatible worker runtime.
 - Keep all secret keys in server-side secret settings only. Never commit API keys, service-role keys, passwords, or payment secrets.
+- The Cloudflare Pages `_headers` file is not automatically applied by Render. A meta CSP fallback is present, but configure and verify response security headers in Render before any public customer launch.
 - Set `DEMO_PREVIEW_BUILD=false` before public launch.
 - Keep payment mode disabled until the complete test-mode flow and all legal/operational requirements are verified.
 
