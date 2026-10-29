@@ -70,6 +70,8 @@ create table public.ai_usage_events(
 create index ai_usage_user_created on public.ai_usage_events(user_id, created_at desc);
 alter table public.ai_usage_events enable row level security;
 revoke all on public.ai_usage_events from anon, authenticated;
+create policy "service role only ai usage events" on public.ai_usage_events for all to anon, authenticated using (false) with check (false);
+create policy "service role only webhook events" on public.webhook_events for all to anon, authenticated using (false) with check (false);
 
 -- Atomically enforce a monthly per-user request quota; only the service role may call it.
 create function public.consume_ai_quota(p_user uuid, p_feature text, p_limit integer, p_input_chars integer)
