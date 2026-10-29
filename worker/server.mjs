@@ -6,7 +6,7 @@ const MAX_BODY_BYTES = 70 * 1024;
 const env = Object.fromEntries(Object.entries(process.env).filter(([, value]) => value !== undefined));
 
 function send(res, status, body, headers = {}) {
-  res.writeHead(status, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff", "referrer-policy": "no-referrer", ...headers });
+  res.writeHead(status, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff", "x-frame-options": "DENY", "content-security-policy": "default-src 'none'; frame-ancestors 'none'", "referrer-policy": "no-referrer", "strict-transport-security": "max-age=31536000", ...headers });
   res.end(JSON.stringify(body));
 }
 
@@ -14,14 +14,19 @@ const server = createServer(async (incoming, outgoing) => {
   try {
     const chunks = [];
     let size = 0;
+    let tooLarge = false;
     for await (const chunk of incoming) {
       size += chunk.length;
       if (size > MAX_BODY_BYTES) {
-        send(outgoing, 413, { error: "Request too large." });
-        incoming.resume();
-        return;
+        tooLarge = true;
+        chunks.length = 0;
+        continue;
       }
-      chunks.push(chunk);
+      if (!tooLarge) chunks.push(chunk);
+    }
+    if (tooLarge) {
+      send(outgoing, 413, { error: "Request too large." });
+      return;
     }
     const headers = new Headers();
     for (const [key, value] of Object.entries(incoming.headers)) {
