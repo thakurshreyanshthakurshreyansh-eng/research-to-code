@@ -164,6 +164,8 @@ export default {
     // without Origin are still allowed for server-to-server calls and tests.
     if (u.pathname !== "/api/webhook" && requestOrigin && requestOrigin !== allowedOrigin) return json({ error: "Origin not allowed." }, 403, { vary: "origin" });
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+    // Liveness only: do not expose secret presence or imply dependencies are healthy.
+    if (u.pathname === "/health" && req.method === "GET") return json({ status: "ok", service: "research-to-code-api" }, 200, cors);
     if (req.method !== "POST") return json({ error: "Not found." }, 404, cors);
     try {
       if (u.pathname === "/api/webhook") return await webhook(req, env);
