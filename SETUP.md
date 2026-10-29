@@ -5,6 +5,7 @@ Nothing here is switched on until YOU do these steps. Never paste secret keys in
 ## Entry screen (new)
 - The workspace is hidden until sign-in succeeds on a configured site. Email one-time code and Google use Supabase Auth; a fake password/account is not created.
 - In a local `file://` preview only, `Continue in demo mode` opens local PDF/code/test tools so you can inspect the app without backend credentials. This demo does not create an account; AI and payments remain unavailable.
+- To enable the Proof Lab's AI-assisted claim audit, compatibility review and fix suggestions, set `API_BASE` to the deployed API and set frontend build variable `AI_ENABLED=true` only after the API has `AI_ENABLED=true`, `AI_API_URL`, `AI_API_KEY`, `AI_MODEL`, and working Supabase service-role/anon credentials. This is an explicit opt-in; missing backend credentials still cause AI requests to fail safely. Payments stay disabled.
 - The language control is visible on the first screen and remains in the top header after sign-in. The main home/navigation strings are translated; detailed technical tool messages may still be in English.
 - If opening an HTML file in an Android file preview makes taps do nothing, download it and open it in Chrome. Some file/document previewers disable JavaScript.
 

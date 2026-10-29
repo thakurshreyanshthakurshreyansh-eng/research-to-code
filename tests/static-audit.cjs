@@ -2,7 +2,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert');
 const root=path.join(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const html=read('index.html'),worker=read('worker/worker.js'),setup=read('SETUP.md'),privacy=read('privacy.html'),terms=read('terms.html'),headers=read('_headers');
 let pass=0,fail=0;function t(name,fn){try{fn();pass++;console.log('PASS',name)}catch(e){fail++;console.log('FAIL',name,'-',e.message)}}
-t('public frontend defaults to no payments and no AI',()=>assert(/PAYMENTS_ENABLED:false,AI_ENABLED:false/.test(html)));
+t('public frontend defaults to no payments and no AI; AI requires explicit build opt-in and API origin',()=>assert(/PAYMENTS_ENABLED:false,AI_ENABLED:false/.test(html)&&/AI_ENABLED=true/.test(read('scripts/configure_site.py'))&&/ai_enabled and not api_base/.test(read('scripts/configure_site.py'))));
 t('frontend does not contain server-secret variable names',()=>assert(!/SUPABASE_SERVICE_ROLE_KEY|RAZORPAY_KEY_SECRET|RAZORPAY_WEBHOOK_SECRET|AI_API_KEY/.test(html)));
 t('AI UI consent text describes what is sent',()=>assert(/first 18,000 characters/.test(html)&&/aiConsent/.test(html)&&!html.includes('selected text/code')));
 t('AI request sends consent and Worker enforces it',()=>assert(/consent:true/.test(html)&&/b\.consent !== true/.test(worker)));
