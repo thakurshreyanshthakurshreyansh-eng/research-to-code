@@ -44,7 +44,7 @@ In the API service's Environment settings, set:
 
 Only after the API's Supabase keys are configured, set `API_BASE=https://research-to-code-api.onrender.com` in the frontend Static Site's Environment settings. Do not point the frontend at an API that has not been configured; account export/delete and other API-backed operations will fail.
 
-## C. Cloudflare Worker (free tier)
+## Optional alternative: Cloudflare Worker (do not deploy alongside the Render API unless intentionally switching)
 1. dash.cloudflare.com > Workers & Pages > Create > Worker. Open the code editor, replace everything with worker/worker.js, Deploy.
 2. Settings > Variables and Secrets. Plain text: SUPABASE_URL, SUPABASE_ANON_KEY, ALLOWED_ORIGIN (your site origin only, like https://name.github.io, no path), PAYMENTS_ENABLED = false initially, PAYMENT_MODE = test.
 3. Secrets (type "Secret"): SUPABASE_SERVICE_ROLE_KEY. For payment testing later, add RAZORPAY_KEY_ID as a plain variable beginning `rzp_test_`, and RAZORPAY_KEY_SECRET plus RAZORPAY_WEBHOOK_SECRET as Secrets. Never use `rzp_live_` keys in this build.
