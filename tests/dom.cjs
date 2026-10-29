@@ -14,7 +14,7 @@ else if(mode==='slowload')send({type:'status',text:'Downloading'});
 else if(mode==='fatal')send({type:'fatal',text:'Network error'})},5)}
 terminate(){this.dead=true}}
 const storage={};const ctx={document,window:{scrollTo(){},confirm:()=>true,addEventListener(){}},localStorage:{getItem:k=>storage[k]||null,setItem:(k,v)=>{storage[k]=v},removeItem:k=>{delete storage[k]}},navigator:{},Worker:FakeWorker,Blob,URL,performance,setTimeout,clearTimeout,setInterval,clearInterval,atob,console};
-vm.createContext(ctx);vm.runInContext(js,ctx);ctx.CFG.SUPABASE_URL='';ctx.CFG.SUPABASE_ANON_KEY='';
+vm.createContext(ctx);vm.runInContext(js,ctx);
 const E=id=>document.getElementById(id),latest=()=>E('runs').innerHTML.split('<div class="card">')[1]||'';
 const setCode=()=>{E('after').value='def f(): pass';E('before').value='x';E('tests').value='def test_a(): pass'};
 let pass=0,fail=0;const t=async(n,f)=>{try{await f();pass++;console.log('PASS',n)}catch(e){fail++;console.log('FAIL',n,'-',e.message)}};
