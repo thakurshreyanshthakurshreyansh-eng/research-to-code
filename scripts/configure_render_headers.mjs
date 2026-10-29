@@ -29,9 +29,15 @@ function extractPage(payload, response) {
     items = [payload.headers, payload.items, payload.data, payload.results].find(Array.isArray);
   }
   if (!items) throw new Error("Render header-list response did not contain a recognizable rules array; refusing to replace rules.");
-  const cursor = (payload && !Array.isArray(payload) &&
-      (payload.cursor || payload.nextCursor || payload.next_cursor || payload.pagination?.cursor)) ||
-      response.headers.get("x-next-cursor") || null;
+  // Render's documented GET response is an array of { header, cursor } entries.
+  // The continuation cursor is attached to the last item, not to the array itself.
+  let cursor = (payload && !Array.isArray(payload) &&
+      (payload.cursor || payload.nextCursor || payload.next_cursor || payload.pagination?.cursor)) || null;
+  if (!cursor && Array.isArray(payload) && payload.length) {
+    const last = payload[payload.length - 1];
+    if (last && typeof last.cursor === "string" && last.cursor) cursor = last.cursor;
+  }
+  cursor = cursor || response.headers.get("x-next-cursor") || null;
   return { rules: items.map(unwrapRule), cursor: cursor ? String(cursor) : null };
 }
 
