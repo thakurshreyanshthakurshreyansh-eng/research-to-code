@@ -25,6 +25,13 @@ function makePdf(text) {
   return Buffer.from(pdf, "ascii");
 }
 
+async function downloadBytes(download) {
+  const stream = await download.createReadStream();
+  const chunks = [];
+  for await (const chunk of stream) chunks.push(chunk);
+  return Buffer.concat(chunks);
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const failures = [];
@@ -126,6 +133,67 @@ function makePdf(text) {
       await page.waitForFunction(() => !document.querySelector("#pdfOut").hidden, { timeout: 45000 });
       assert.ok((await page.locator("#prev").textContent()).includes("Research to Code sample paper"), viewport.name + ": PDF text should be extracted");
       console.log("PASS " + viewport.name + ": valid PDF text extraction");
+      // Proof Lab: exercise each module in a real browser with AI disabled.
+      // The local reports must stay honest about what was and was not executed.
+      if (viewport.name === "mobile") {
+        await page.locator('#nav button[data-t="code"]').click();
+        await page.locator("#before").fill("import os\\ndef f(): return os.name");
+        await page.locator("#after").fill("import json\\ndef f(): return json.dumps(1)");
+        await page.locator('#nav button[data-t="proof"]').click();
+        await page.locator("#tests").fill("def test_f(): assert True");
+        await page.evaluate(() => {
+          window.runs.push({
+            at: new Date().toISOString(), target: "after",
+            code: document.querySelector("#after").value,
+            tests: document.querySelector("#tests").value,
+            ran: true, status: "failed", exit: 1, ms: 5,
+            out: "AssertionError: assert 0 == 1", err: "", message: ""
+          });
+        });
+        await page.locator('#nav button[data-t="lab"]').click();
+        assert.ok(await page.locator("#labFix").isEnabled(), "offline Fix diagnosis should remain available when AI is disabled");
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 2), "Proof Lab should not overflow horizontally");
+
+        const proofDownloadPromise = page.waitForEvent("download");
+        await page.locator("#labProofPack").click();
+        const proofDownload = await proofDownloadPromise;
+        assert.equal(proofDownload.suggestedFilename(), "research-to-code-proof-pack.json");
+        const proof = JSON.parse((await downloadBytes(proofDownload)).toString("utf8"));
+        assert.equal(proof.format, "research-to-code-proof-pack");
+        assert.equal(proof.verificationRules.aiOutputIsExecutionEvidence, false);
+        assert.equal(proof.evidence.latestRun.status, "failed");
+
+        await page.locator("#labClaims").click();
+        await page.waitForFunction(() => (document.querySelector("#labOutput")?.textContent || "").includes("local-only"));
+        const claims = JSON.parse(await page.locator("#labOutput").textContent());
+        assert.equal(claims.mode, "local-only");
+        assert.equal(claims.paper.extractedTextAvailable, true);
+        assert.match(claims.verdict, /No scientific claim is marked verified/);
+
+        await page.locator("#labCompat").click();
+        await page.waitForFunction(() => (document.querySelector("#labOutput")?.textContent || "").includes("local-only"));
+        const compat = JSON.parse(await page.locator("#labOutput").textContent());
+        assert.ok(compat.imports.onlyBefore.includes("os"));
+        assert.ok(compat.imports.onlyAfter.includes("json"));
+
+        await page.locator("#labFix").click();
+        await page.waitForFunction(() => (document.querySelector("#labOutput")?.textContent || "").includes("local failure diagnosis"));
+        const diagnosis = JSON.parse(await page.locator("#labOutput").textContent());
+        assert.ok(diagnosis.diagnosis.hints.some(h => h.includes("Assertion failed")));
+        assert.equal(diagnosis.diagnosis.codeMatchesCurrent, true);
+        assert.equal(diagnosis.diagnosis.testsMatchCurrent, true);
+        assert.equal(await page.locator("#after").inputValue(), "import json\\ndef f(): return json.dumps(1)", "local diagnosis must not silently change code");
+
+        const zipDownloadPromise = page.waitForEvent("download");
+        await page.locator("#labHandoff").click();
+        const zipDownload = await zipDownloadPromise;
+        assert.equal(zipDownload.suggestedFilename(), "research-to-code-project-handoff.zip");
+        const zip = await downloadBytes(zipDownload);
+        assert.equal(zip.readUInt32LE(0), 0x04034b50, "handoff must be a real ZIP archive");
+        assert.equal(zip.readUInt32LE(zip.length - 22), 0x06054b50, "handoff must have an end-of-central-directory record");
+        console.log("PASS mobile: Proof Pack, claims audit, compatibility report, offline Fix diagnosis and real ZIP handoff");
+      }
+
 
       // Invalid PDF must fail clearly before loading external libraries.
       await page.locator('#nav button[data-t="paper"]').click();
