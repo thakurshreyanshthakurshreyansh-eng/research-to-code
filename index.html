@@ -744,8 +744,8 @@ $("labDownload").onclick=function(){downloadBlob("research-to-code-lab-report.tx
 $("labApplyFix").onclick=function(){
   var c=fencedCode(labLastOutput);
   if(!c){say("labStatus","Suggested fix में fenced code block नहीं मिला; कुछ भी apply नहीं किया गया।");return}
+  if(!$("tests").value.trim()){say("labStatus","पहले Proof tab में pytest tests जोड़ें; fix apply नहीं किया गया ताकि untested code overwrite न हो।");go("proof");return}
   $("after").value=c;target="after";
-  if(!$("tests").value.trim()){say("labStatus","पहले Proof tab में pytest tests जोड़ें, ताकि fix को वास्तविक tests से verify किया जा सके।");go("proof");return}
   document.querySelectorAll("#tseg button").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.t==="after"))});
   refreshProof();scheduleSave();go("proof");
   say("runStatus","AI suggestion After code में रखी गई है; retest शुरू होगा।");
