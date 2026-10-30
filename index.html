@@ -168,10 +168,6 @@ button{min-height:44px}
 @media(min-width:760px){.labGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.labWide{grid-column:1/-1}.labActions{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 
-/* Interface-only mode: remove all sign-in surfaces and open local workspace directly. */
-#gateScreen,#acBtn,#account,.accountPreview,#previewModeBanner{display:none!important}
-body:not(.app-unlocked) .wrap,body:not(.app-unlocked)>#nav{display:block!important}
-body:not(.app-unlocked) #gateScreen{display:none!important}
 </style>
 </head>
 <body>
@@ -1019,8 +1015,8 @@ function renderRuns(){
   }).join("");
 }
 /* ===== Sign-in and plans. SETTINGS: public values only. Never paste a secret key here. ===== */
-var CFG={SUPABASE_URL:"",SUPABASE_ANON_KEY:"",API_BASE:"",RAZORPAY_KEY_ID:"",PAYMENTS_ENABLED:false,AI_ENABLED:false};
-var DEMO_PREVIEW_BUILD=true; // Set false before any public deployment; this build is for local/preview testing only.
+var CFG={SUPABASE_URL:"https://tfpltqrikyqbuqmbrgln.supabase.co",SUPABASE_ANON_KEY:"sb_publishable_ePA8IEaGSOk-kl-ccrkC2g_vUQgNluj",API_BASE:"https://research-to-code-api.onrender.com",RAZORPAY_KEY_ID:"",PAYMENTS_ENABLED:false,AI_ENABLED:false};
+var DEMO_PREVIEW_BUILD=false; // Production: demo access is local-only; authenticated accounts use Supabase.
 var SBJS="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js",RZPJS="https://checkout.razorpay.com/v1/checkout.js";
 var sb=null,session=null,cool=0,coolT=null;
 var LOCAL_PREVIEW=(typeof location!=="undefined"&&(location.protocol==="file:"||location.hostname==="localhost"||location.hostname==="127.0.0.1"));
@@ -1259,7 +1255,7 @@ restoreDraft();
 var originalClear=$("clr").onclick;
 $("clr").onclick=function(){if(running||ocrActive){originalClear();return}if(!window.confirm("Clear the current workspace and its locally saved draft from this browser? Downloaded backups will remain."))return;originalClear();draftCleared=true;try{localStorage.removeItem(SAVE_KEY)}catch(e){}$("saveBadge").textContent="Local draft cleared"};
 if(window.addEventListener)window.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){if($("proof").classList.contains("on")){$("run").click();e.preventDefault()}else if($("code").classList.contains("on")){$("cmp").click();e.preventDefault()}}if(e.altKey&&/^[1-4]$/.test(e.key)){var ids=["home","paper","code","proof"];go(ids[Number(e.key)-1]);e.preventDefault()}});
-document.body.classList.add("app-unlocked");renderRuns();setupLanguageSelects();go("home");session=null;refreshAIStatus();
+renderRuns();setupLanguageSelects();initAuth();refreshAIStatus();
 </script>
 
 </body>
