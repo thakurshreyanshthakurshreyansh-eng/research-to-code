@@ -1024,7 +1024,7 @@ function setGateMessage(t){var el=$("gateStatus");if(el)el.textContent=t||""}
 function setupGate(){
   var configured=cfgOk();
   $("gateAuthForms").hidden=false; /* Keep sign-in controls visible; handlers report when auth is not configured. */
-  $("gatePreviewArea").hidden=!((LOCAL_PREVIEW||DEMO_PREVIEW_BUILD)&&!session&&!configured);
+  $("gatePreviewArea").hidden=!((LOCAL_PREVIEW||DEMO_PREVIEW_BUILD)&&!session);
   if(configured){$("gateSetupMessage").textContent=currentLang==="en"?"Sign in securely with your Google account to continue.":"आगे बढ़ने के लिए अपने Google अकाउंट से सुरक्षित लॉगिन करें।"}
   else if(LOCAL_PREVIEW||DEMO_PREVIEW_BUILD){$("gateSetupMessage").textContent=currentLang==="en"?"This preview has no Supabase sign-in settings. You can enter demo mode to test local features; no real account is created.":"इस प्रीव्यू में Supabase की साइन-इन सेटिंग नहीं है। लोकल फ़ीचर जाँचने के लिए डेमो में प्रवेश करें; असली अकाउंट नहीं बनेगा।"}
   else {$("gateSetupMessage").textContent=currentLang==="en"?"Sign-in is not configured on this site. The owner must configure Supabase Auth before customers can continue.":"इस वेबसाइट पर साइन-इन सेट नहीं है। ग्राहकों को प्रवेश देने से पहले मालिक को Supabase Auth कॉन्फ़िगर करना होगा।"}
