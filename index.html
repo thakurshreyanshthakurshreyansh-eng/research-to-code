@@ -1112,9 +1112,9 @@ function gateSendCode(){
       $("gateOtpBox").hidden=false;
       if(/rate limit|seconds|too many/i.test(r.error.message||"")){
         gateOtpCooldownStart(gateRateLimitSeconds(r.error.message));
-        setGateMessage(currentLang==="en"?"Resend is temporarily limited. If you already received an email code, enter it below; otherwise wait for the timer.":"नया कोड भेजने पर अस्थायी रोक है। अगर पहले ईमेल में कोड आया था, तो नीचे डालें; नहीं तो टाइमर पूरा होने दें।");
+        setGateMessage(currentLang==="en"?"Too many requests. Resend is temporarily limited; enter a previously received code or wait for the timer.":"बहुत अधिक अनुरोध हुए हैं। नया कोड भेजने पर अस्थायी रोक है; पहले मिला कोड डालें या टाइमर पूरा होने दें।");
       }else setGateMessage(friendlyAuthError(r.error.message));
-      $("gateOtp").focus();return
+      return
     }
     $("gateOtpBox").hidden=false;
     gateOtpCooldownStart(60);
@@ -1126,7 +1126,6 @@ function gateSendCode(){
       gateOtpCooldownStart(gateRateLimitSeconds(e.message));
       setGateMessage(currentLang==="en"?"Resend is temporarily limited. If you already received an email code, enter it below; otherwise wait for the timer.":"नया कोड भेजने पर अस्थायी रोक है। अगर पहले ईमेल में कोड आया था, तो नीचे डालें; नहीं तो टाइमर पूरा होने दें।");
     }else setGateMessage(friendlyAuthError(e&&e.message));
-    $("gateOtp").focus()
   });
 }
 async function gateVerifyCode(){
@@ -1134,7 +1133,7 @@ async function gateVerifyCode(){
   if(!sb){setGateMessage(currentLang==="en"?"Sign-in is not configured yet.":"साइन-इन अभी कॉन्फ़िगर नहीं है।");return}
   if(!/^\d{6,10}$/.test(code)){setGateMessage(currentLang==="en"?"Enter the numeric code from email.":"ईमेल में आया नंबर वाला कोड दर्ज करें।");return}
   lock("gateVerifyOtp",true);setGateMessage(currentLang==="en"?"Verifying code…":"कोड जाँचा जा रहा है…");
-  try{var r=await sb.auth.verifyOtp({email:em,token:code,type:"email"});if(r.error)throw r.error;session=(await sb.auth.getSession()).data.session;if(session)unlockApp("account");else setGateMessage(currentLang==="en"?"Code accepted, but no active session was returned.":"कोड स्वीकार हुआ, पर सक्रिय सेशन नहीं मिला।")}catch(e){setGateMessage(friendlyAuthError(e&&e.message))}finally{lock("gateVerifyOtp",false)}
+  try{var r=await sb.auth.verifyOtp({email:em,token:code,type:"email"});if(r.error)throw r.error;session=(await sb.auth.getSession()).data.session;if(session){setGateMessage(currentLang==="en"?"You are signed in.":"आप साइन इन हो गए हैं।");unlockApp("account")}else setGateMessage(currentLang==="en"?"Code accepted, but no active session was returned.":"कोड स्वीकार हुआ, पर सक्रिय सेशन नहीं मिला।")}catch(e){setGateMessage(friendlyAuthError(e&&e.message))}finally{lock("gateVerifyOtp",false)}
 }
 async function gateGoogleSignIn(){
   if(!sb){setGateMessage(currentLang==="en"?"Google sign-in is not configured yet.":"Google साइन-इन अभी कॉन्फ़िगर नहीं है।");return}
