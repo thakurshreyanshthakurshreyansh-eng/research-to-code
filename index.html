@@ -1015,8 +1015,8 @@ function renderRuns(){
   }).join("");
 }
 /* ===== Sign-in and plans. SETTINGS: public values only. Never paste a secret key here. ===== */
-var CFG={SUPABASE_URL:"https://tfpltqrikyqbuqmbrgln.supabase.co",SUPABASE_ANON_KEY:"sb_publishable_ePA8IEaGSOk-kl-ccrkC2g_vUQgNluj",API_BASE:"https://research-to-code-api.onrender.com",RAZORPAY_KEY_ID:"",PAYMENTS_ENABLED:false,AI_ENABLED:false};
-var DEMO_PREVIEW_BUILD=false; // Production: demo access is local-only; authenticated accounts use Supabase.
+var CFG={SUPABASE_URL:"",SUPABASE_ANON_KEY:"",API_BASE:"",RAZORPAY_KEY_ID:"",PAYMENTS_ENABLED:false,AI_ENABLED:false};
+var DEMO_PREVIEW_BUILD=true; // Set false before any public deployment; this build is for local/preview testing only.
 var SBJS="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js",RZPJS="https://checkout.razorpay.com/v1/checkout.js";
 var sb=null,session=null,cool=0,coolT=null;
 var LOCAL_PREVIEW=(typeof location!=="undefined"&&(location.protocol==="file:"||location.hostname==="localhost"||location.hostname==="127.0.0.1"));
