@@ -1105,7 +1105,7 @@ function gateSendCode(){
   if(!sb){setGateMessage(currentLang==="en"?"Sign-in is not configured yet.":"साइन-इन अभी कॉन्फ़िगर नहीं है।");return}
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){setGateMessage(currentLang==="en"?"Enter a valid email address.":"सही ईमेल पता दर्ज करें।");return}
   lock("gateSendOtp",true);setGateMessage(currentLang==="en"?"Sending sign-in code…":"साइन-इन कोड भेजा जा रहा है…");
-  sb.auth.signInWithOtp({email:em,options:{shouldCreateUser:true}}).then(function(r){
+  sb.auth.signInWithOtp({email:em,options:{shouldCreateUser:true,emailRedirectTo:location.origin+location.pathname}}).then(function(r){
     if(r.error){
       lock("gateSendOtp",false);
       /* Keep code entry available even when resend is rate-limited: a previously received code may still work. */
