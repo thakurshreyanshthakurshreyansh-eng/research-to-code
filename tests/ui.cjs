@@ -1,6 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const html=fs.readFileSync(require('path').join(__dirname,'..','index.html'),'utf8'),js=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].pop()[1];
-class El{constructor(id){this.id=id;this.value='';this.hidden=false;this.disabled=false;this.textContent='';this.innerHTML='';this.dataset={};this.style={};this.children=[]}appendChild(c){return c}setAttribute(){}removeAttribute(){}addEventListener(){}remove(){}click(){}querySelectorAll(){return[]}}
+class El{constructor(id){this.id=id;this.value='';this.hidden=false;this.disabled=false;this.textContent='';this.innerHTML='';this.dataset={};this.style={};this.classList={add(){},remove(){},toggle(){}};this.children=[]}appendChild(c){return c}setAttribute(){}removeAttribute(){}addEventListener(){}remove(){}click(){}querySelectorAll(){return[]}}
 const els={},document={getElementById:i=>els[i]||(els[i]=new El(i)),createElement:()=>new El(),createTextNode:t=>({t}),querySelectorAll:()=>[],head:new El(),body:new El()};
 const E=i=>document.getElementById(i);let calls=[],rzOpts=null,rzHandlers={};
 class Razorpay{constructor(o){rzOpts=o}on(e,f){rzHandlers[e]=f}open(){}}
