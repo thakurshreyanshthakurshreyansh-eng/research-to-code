@@ -182,7 +182,16 @@ button{min-height:44px}
       <p class="mut" id="gateDescription">अपने अकाउंट से प्रवेश करें। प्रवेश के बाद ऊपर से हिंदी या English चुन सकते हैं।</p>
       <div id="gateSetupMessage" class="gateMessage" role="status" aria-live="polite">लॉगिन सेवा अभी इस प्रीव्यू में सेट नहीं है।</div>
       <div id="gateAuthForms" hidden>
-        <button id="gateGoogle" class="btn" type="button">Google से जारी रखें</button>
+        <label for="gateEmail" id="gateEmailLabel" data-t="gateEmailLabel">ईमेल पता</label>
+        <input id="gateEmail" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com" aria-describedby="gateStatus">
+        <button id="gateSendOtp" class="btn" type="button" data-t="gateSendOtp">साइन-इन कोड भेजें</button>
+        <div id="gateOtpBox" hidden>
+          <label for="gateOtp" id="gateOtpLabel" data-t="gateOtpLabel">ईमेल में आया कोड</label>
+          <input id="gateOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="6-digit code">
+          <button id="gateVerifyOtp" class="btn" type="button" data-t="gateVerifyOtp">कोड सत्यापित करें</button>
+        </div>
+        <p class="note" id="gateOr" data-t="gateOr">या</p>
+        <button id="gateGoogle" class="btn alt" type="button" data-t="gateGoogle">Google से जारी रखें</button>
       </div>
       <div id="gatePreviewArea" class="gateButtons" hidden>
         <button id="gateDemo" class="btn" type="button">डेमो में प्रवेश करें</button>
@@ -1154,29 +1163,6 @@ async function loadEnt(){
     $("acPlan").textContent=r.data&&Date.parse(r.data.expires_at)>Date.now()?"Premium until "+new Date(r.data.expires_at).toLocaleDateString("en-IN"):"Free plan"}
   catch(e){$("acPlan").textContent="Plan status unavailable. Try again later."}
 }
-function tick(){var r=$("resend"),s=$("sendOtp");r.disabled=s.disabled=cool>0;r.textContent=cool>0?"Resend code in "+cool+"s":"Resend code"}
-function startCool(n){cool=n;clearInterval(coolT);tick();coolT=setInterval(function(){cool--;tick();if(cool<=0)clearInterval(coolT)},1000)}
-async function sendCode(){
-  var em=$("email").value.trim();
-  if(!sb||cool>0)return;
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){say("acMsg","Enter a valid email address.");return}
-  lock("sendOtp",true);say("acMsg","Sending code...");
-  try{var r=await sb.auth.signInWithOtp({email:em,options:{shouldCreateUser:true}});
-    if(r.error){lock("sendOtp",false);say("acMsg",friendlyAuthError(r.error.message));return}
-    $("otpBox").hidden=false;startCool(60);say("acMsg","We sent a code to "+em+". Check your inbox and spam folder.");
-  }catch(e){lock("sendOtp",false);say("acMsg",friendlyAuthError(e&&e.message))}
-}
-async function verifyCode(){
-  var em=$("email").value.trim(),c=$("otp").value.replace(/\s/g,"");
-  if(!sb)return;
-  if(!/^\d{6,10}$/.test(c)){say("acMsg","Enter the numeric code from the email.");return}
-  lock("verOtp",true);say("acMsg","Checking code...");
-  try{var r=await sb.auth.verifyOtp({email:em,token:c,type:"email"});
-    if(r.error)say("acMsg",friendlyAuthError(r.error.message));
-    else{$("otp").value="";$("otpBox").hidden=true;say("acMsg","You are signed in.")}
-  }catch(e){say("acMsg",friendlyAuthError(e&&e.message))}
-  lock("verOtp",false);
-}
 async function googleIn(){
   if(!sb)return;lock("gBtn",true);say("acMsg","Opening Google...");
   try{var r=await sb.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+location.pathname}});if(r.error){say("acMsg",friendlyAuthError(r.error.message));lock("gBtn",false)}}
@@ -1241,7 +1227,9 @@ $("aiUseCode").onclick=function(){var c=fencedCode($("aiOutput").textContent);if
 $("aiUseTests").onclick=function(){var c=fencedCode($("aiOutput").textContent);if(!c){say("aiStatus","No fenced code block found in the AI output.");return}$("tests").value=c;go("proof");say("aiStatus","AI tests copied to Proof Mode. Review them before running.")};
 $("buyBox").onclick=function(e){var d=e.target&&e.target.dataset;if(!d)return;if(d.plan)buy(d.plan);else if(d.go)go(d.go)};
 $("acBtn").onclick=function(){go("account");if(!cfgOk())say("acMsg","लाइव साइन-अप चालू नहीं है: इस प्रीव्यू में Supabase की सार्वजनिक सेटिंग्स कॉन्फ़िगर नहीं हैं।")};
-$("gBtn").onclick=googleIn;$("acRef").onclick=loadEnt;
+$("gBtn").onclick=googleIn;
+$("gateSendOtp").addEventListener("click",gateSendCode);
+$("gateVerifyOtp").addEventListener("click",gateVerifyCode);$("acRef").onclick=loadEnt;
 $("accountExport").onclick=async function(){if(!session||!CFG.API_BASE){say("acMsg","Sign in and configure the backend first.");return}lock("accountExport",true);try{var r=await fetch(CFG.API_BASE+"/api/account/export",{method:"POST",headers:{authorization:"Bearer "+session.access_token,"content-type":"application/json"},body:"{}"});var j;try{j=await r.json()}catch(_){throw new Error("Account service returned an unreadable response. Try again later.")}if(!r.ok)throw new Error(j.error||"Export failed.");downloadBlob("research-to-code-account-export.json",new Blob([JSON.stringify(j,null,2)],{type:"application/json"}));say("acMsg","Account data exported. Keep the file private.")}catch(e){say("acMsg",e&&e.message?e.message:"Account export failed.")}finally{lock("accountExport",false)}};
 $("accountDelete").onclick=async function(){if(!session||!CFG.API_BASE){say("acMsg","Sign in and configure the backend first.");return}if(!window.confirm("Permanently delete your account and server-held app data? This cannot be undone and does not automatically refund payments. Continue only if you are sure."))return;if(window.prompt("Type DELETE_MY_ACCOUNT to confirm permanent deletion.")!=="DELETE_MY_ACCOUNT"){say("acMsg","Deletion cancelled: confirmation text did not match.");return}lock("accountDelete",true);try{var r=await fetch(CFG.API_BASE+"/api/account/delete",{method:"POST",headers:{authorization:"Bearer "+session.access_token,"content-type":"application/json"},body:JSON.stringify({confirm:"DELETE_MY_ACCOUNT"})});var j;try{j=await r.json()}catch(_){throw new Error("Account service returned an unreadable response. Deletion was not confirmed; check again before retrying.")}if(!r.ok)throw new Error(j.error||"Account deletion failed.");if(sb)await sb.auth.signOut();session=null;renderAccount();say("acMsg","Account and app records were deleted. External providers may retain records under their own policies.")}catch(e){say("acMsg",e&&e.message?e.message:"Account deletion failed.")}finally{lock("accountDelete",false)}};
 $("outBtn").onclick=async function(){if(!sb)return;try{await sb.auth.signOut();session=null;lockApp();setGateMessage(currentLang==="en"?"You are signed out.":"आप साइन आउट हो चुके हैं।");say("acMsg","You are signed out.")}catch(e){say("acMsg","Could not sign out. Try again.")}};
