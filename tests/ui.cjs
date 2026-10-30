@@ -15,6 +15,7 @@ await t('unconfigured: sign-in explains live setup is missing, no login form',()
 await t('unconfigured: purchases say switched off, no buy button',async()=>{await run('renderPlans()');assert(E('buyBox').innerHTML.includes('switched off'));assert(!E('buyBox').innerHTML.includes('data-plan'))});
 await t('secret key in settings disables sign-in (service_role JWT)',()=>{ctx.CFG.SUPABASE_URL='https://x.supabase.co';ctx.CFG.SUPABASE_ANON_KEY=jwt('service_role');run('renderAccount()');assert(E('acNone').innerHTML.includes('Setup error'));assert.equal(E('acOut').hidden,true)});
 await t('sb_secret_ key is also rejected; anon JWT and sb_publishable_ accepted',()=>{assert(ctx.isSecretKey('sb_secret_abc'));assert(!ctx.isSecretKey(jwt('anon')));assert(!ctx.isSecretKey('sb_publishable_abc'));assert(!ctx.isSecretKey(''))});
+ctx.CFG.SUPABASE_URL='https://x.supabase.co';
 ctx.CFG.SUPABASE_ANON_KEY=jwt('anon');
 await t('configured and signed out: login form visible',()=>{ctx.sb=fakeSb();ctx.session=null;run('renderAccount()');assert.equal(E('acOut').hidden,false);assert.equal(E('acNone').hidden,true)});
 await t('invalid email is rejected before any request',async()=>{calls=[];E('gateEmail').value='nope';await run('gateSendCode()');assert(E('gateStatus').textContent.includes('valid email'));assert.equal(calls.length,0)});
