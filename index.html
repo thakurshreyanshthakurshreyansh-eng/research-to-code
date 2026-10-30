@@ -1087,16 +1087,47 @@ async function initAuth(){
   }catch(e){setupGate();setGateMessage((currentLang==="en"?"Could not start sign-in: ":"साइन-इन शुरू नहीं हो सका: ")+(e&&e.message?e.message:""));say("acMsg","Could not start sign-in. "+(e&&e.message?e.message:""))}
   renderAccount();renderPlans();
 }
+var gateOtpCooldown=0,gateOtpCooldownTimer=null;
+function gateOtpCooldownStart(seconds){
+  gateOtpCooldown=Math.max(1,Math.min(120,Number(seconds)||60));
+  clearInterval(gateOtpCooldownTimer);
+  var btn=$("gateSendOtp");
+  function paint(){
+    btn.disabled=gateOtpCooldown>0;
+    if(gateOtpCooldown>0){
+      btn.textContent=(currentLang==="en"?"Wait ":"रुकें ")+gateOtpCooldown+"s";
+    }else{
+      btn.textContent=currentLang==="en"?"Send sign-in code":"साइन-इन कोड भेजें";
+      clearInterval(gateOtpCooldownTimer);
+    }
+  }
+  paint();
+  gateOtpCooldownTimer=setInterval(function(){gateOtpCooldown=Math.max(0,gateOtpCooldown-1);paint()},1000);
+}
+function gateRateLimitSeconds(message){
+  var m=String(message||"").match(/after\s+(\d+)\s+seconds?/i);
+  return m?Math.max(1,Number(m[1])+2):60;
+}
 function gateSendCode(){
   var em=$("gateEmail").value.trim();
+  if(gateOtpCooldown>0)return;
   if(!sb){setGateMessage(currentLang==="en"?"Sign-in is not configured yet.":"साइन-इन अभी कॉन्फ़िगर नहीं है।");return}
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){setGateMessage(currentLang==="en"?"Enter a valid email address.":"सही ईमेल पता दर्ज करें।");return}
   lock("gateSendOtp",true);setGateMessage(currentLang==="en"?"Sending sign-in code…":"साइन-इन कोड भेजा जा रहा है…");
   sb.auth.signInWithOtp({email:em,options:{shouldCreateUser:true}}).then(function(r){
+    if(r.error){
+      lock("gateSendOtp",false);
+      if(/rate limit|seconds|too many/i.test(r.error.message||""))gateOtpCooldownStart(gateRateLimitSeconds(r.error.message));
+      setGateMessage(friendlyAuthError(r.error.message));return
+    }
+    $("gateOtpBox").hidden=false;
+    gateOtpCooldownStart(60);
+    setGateMessage(currentLang==="en"?"Code sent. Use the newest email code only; check inbox and spam. Wait for the resend timer before requesting another.":"कोड भेज दिया गया है। सिर्फ़ सबसे नए ईमेल का कोड इस्तेमाल करें; Inbox और Spam देखें। दोबारा कोड माँगने से पहले टाइमर पूरा होने दें।");
+  }).catch(function(e){
     lock("gateSendOtp",false);
-    if(r.error){setGateMessage(friendlyAuthError(r.error.message));return}
-    $("gateOtpBox").hidden=false;setGateMessage(currentLang==="en"?"Code sent. Check your inbox and spam folder.":"कोड भेज दिया गया है। Inbox और Spam फ़ोल्डर देखें।");
-  }).catch(function(e){lock("gateSendOtp",false);setGateMessage(friendlyAuthError(e&&e.message))});
+    if(/rate limit|seconds|too many/i.test((e&&e.message)||""))gateOtpCooldownStart(gateRateLimitSeconds(e.message));
+    setGateMessage(friendlyAuthError(e&&e.message))
+  });
 }
 async function gateVerifyCode(){
   var em=$("gateEmail").value.trim(),code=$("gateOtp").value.replace(/\s/g,"");
