@@ -167,6 +167,11 @@ button{min-height:44px}
 .labActions{display:grid;gap:8px;margin-top:12px}
 @media(min-width:760px){.labGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.labWide{grid-column:1/-1}.labActions{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+
+/* Interface-only mode: remove all sign-in surfaces and open local workspace directly. */
+#gateScreen,#acBtn,#account,.accountPreview,#previewModeBanner{display:none!important}
+body:not(.app-unlocked) .wrap,body:not(.app-unlocked)>#nav{display:block!important}
+body:not(.app-unlocked) #gateScreen{display:none!important}
 </style>
 </head>
 <body>
@@ -1254,7 +1259,7 @@ restoreDraft();
 var originalClear=$("clr").onclick;
 $("clr").onclick=function(){if(running||ocrActive){originalClear();return}if(!window.confirm("Clear the current workspace and its locally saved draft from this browser? Downloaded backups will remain."))return;originalClear();draftCleared=true;try{localStorage.removeItem(SAVE_KEY)}catch(e){}$("saveBadge").textContent="Local draft cleared"};
 if(window.addEventListener)window.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){if($("proof").classList.contains("on")){$("run").click();e.preventDefault()}else if($("code").classList.contains("on")){$("cmp").click();e.preventDefault()}}if(e.altKey&&/^[1-4]$/.test(e.key)){var ids=["home","paper","code","proof"];go(ids[Number(e.key)-1]);e.preventDefault()}});
-renderRuns();setupLanguageSelects();go("home");initAuth();refreshAIStatus();
+document.body.classList.add("app-unlocked");renderRuns();setupLanguageSelects();go("home");session=null;refreshAIStatus();
 </script>
 
 </body>
